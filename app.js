@@ -11,9 +11,7 @@ const STORAGE_KEY = 'itinerary_data';
 function loadData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
+    if (saved) return JSON.parse(saved);
   } catch (e) {
     console.warn('無法讀取 localStorage，使用預設資料', e);
   }
@@ -31,7 +29,6 @@ function saveData() {
   }
 }
 
-// 初始化資料
 let data = loadData();
 
 // ═══════════════════════════════════════════
@@ -53,6 +50,8 @@ function stayLabel(mins) {
   const m = mins % 60;
   return m ? `停留 ${h} 小時 ${m} 分` : `停留 ${h} 小時`;
 }
+
+// 重新計算從 fromIdx 之後的所有時間
 function recalcTimes(dayIdx, fromIdx) {
   const day = data.days[dayIdx];
   const start = (fromIdx !== undefined) ? fromIdx : 0;
@@ -65,8 +64,19 @@ function recalcTimes(dayIdx, fromIdx) {
   }
 }
 
+// 修改後同步地圖（如果地圖頁是 active）
+function syncMapIfActive(di) {
+  const mapPage = document.getElementById('page-map');
+  if (mapPage.classList.contains('active')) {
+    if (di === currentMapDay) {
+      renderMapStopList();
+      refreshMapMarkers();
+    }
+  }
+}
+
 // ═══════════════════════════════════════════
-// RENDER
+// RENDER ITINERARY
 // ═══════════════════════════════════════════
 function renderAll() {
   document.getElementById('nav-title-text').textContent = data.title;
@@ -79,7 +89,6 @@ function renderAll() {
 function renderItinerary() {
   const container = document.getElementById('days-container');
   container.innerHTML = '';
-
   data.days.forEach((day, di) => {
     const card = document.createElement('div');
     card.className = 'day-card';
@@ -118,11 +127,9 @@ function renderStops(di) {
       const arrMins = timeToMinutes(prevStop.depart) + drive;
       arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
     }
-
     const leaveTag = !isLast
       ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
       : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
-
     const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
 
     row.innerHTML = `
@@ -168,21 +175,15 @@ function _stopToPlace(stopName) {
   if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
   return clean + ' 澎湖';
 }
-
 function _buildNavURL(di) {
   const places = data.days[di].stops.map(s => _stopToPlace(s.name));
   return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
 }
 
-// ═══════════════════════════════════════════
-// NAV CARD — Day 卡片底部導航區塊
-// ═══════════════════════════════════════════
 function renderNavCard(di) {
   const day    = data.days[di];
   const stops  = day.stops;
   const navURL = _buildNavURL(di);
-
-  // 景點路線預覽（只取名字，去掉 emoji）
   const cleanName = name => name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
   const routeChips = stops.map((s, i) => {
     const n = cleanName(s.name);
@@ -203,70 +204,443 @@ function renderNavCard(di) {
 }
 
 // ═══════════════════════════════════════════
-// MAP PAGE — 地圖頁（切換時讀取最新 data）
+// GEOCODING (Nominatim — 免費，無需 API Key)
+// ═══════════════════════════════════════════
+const geocodeCache = {}; // { "景點名稱": {lat, lng} | null }
+const geocodeQueue = []; // [{ key, resolve }]
+let geocodeBusy = false;
+
+// Nominatim 規定每秒最多 1 次請求
+async function _drainQueue() {
+  if (geocodeBusy || geocodeQueue.length === 0) return;
+  geocodeBusy = true;
+  const { key, resolve } = geocodeQueue.shift();
+  try {
+    const q = encodeURIComponent(key);
+    const url = `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&accept-language=zh-TW`;
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'TravelItineraryApp/1.0' }
+    });
+    const json = await res.json();
+    if (json && json.length > 0) {
+      geocodeCache[key] = { lat: parseFloat(json[0].lat), lng: parseFloat(json[0].lon) };
+    } else {
+      geocodeCache[key] = null;
+    }
+    resolve(geocodeCache[key]);
+  } catch (e) {
+    geocodeCache[key] = null;
+    resolve(null);
+  }
+  geocodeBusy = false;
+  setTimeout(_drainQueue, 1100); // 1.1 秒間隔，遵守 Nominatim 規定
+}
+
+function geocode(stopName, stopObj) {
+  // 如果景點已有手動座標，直接回傳
+  if (stopObj && stopObj.coords) {
+    return Promise.resolve(stopObj.coords);
+  }
+  // 清除 emoji 後加上「澎湖」提升精準度
+  const clean = stopName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+  const key = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean) ? clean : clean + ' 澎湖 台灣';
+
+  if (key in geocodeCache) return Promise.resolve(geocodeCache[key]);
+
+  return new Promise(resolve => {
+    geocodeQueue.push({ key, resolve });
+    _drainQueue();
+  });
+}
+
+// ═══════════════════════════════════════════
+// MAP PAGE
 // ═══════════════════════════════════════════
 let currentMapDay = 0;
+let leafletMap = null;
+let mapMarkers = [];
+let mapPolyline = null;
+
+// 字母標籤 A B C D...
+function stopLetter(i) {
+  return String.fromCharCode(65 + i); // A=65
+}
 
 function renderMap() {
   if (currentMapDay >= data.days.length) currentMapDay = 0;
 
+  // Tab 列
   const tabsEl = document.getElementById('map-tabs');
   tabsEl.innerHTML = '';
   data.days.forEach((day, di) => {
     const btn = document.createElement('button');
     btn.className = `map-day-tab${di === currentMapDay ? ' active' : ''}`;
-    btn.textContent = `Day ${di + 1}`;
+    btn.textContent = `Day ${di + 1} · ${day.label.split('·')[0].replace('Day','').trim() ? day.label : `Day ${di+1}`}`;
+    btn.textContent = day.label;
     btn.onclick = () => { currentMapDay = di; renderMap(); };
     tabsEl.appendChild(btn);
   });
 
+  // 初始化 Leaflet（只建立一次）
+  if (!leafletMap) {
+    leafletMap = L.map('leaflet-map', {
+      center: [23.565, 119.579], // 澎湖
+      zoom: 12,
+      zoomControl: true,
+    });
+    // 使用台灣地圖（國土測繪圖磚，正體中文）
+    // fallback 到 OpenStreetMap
+    L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
+      attribution: '© <a href="https://maps.nlsc.gov.tw/">國土測繪中心</a> © <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      maxZoom: 18,
+      tileSize: 256,
+      errorTileUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    }).addTo(leafletMap);
+  }
+
+  renderMapStopList();
+  refreshMapMarkers();
+}
+
+// 更新地圖上的標記與路線
+async function refreshMapMarkers() {
+  // 清除舊標記
+  mapMarkers.forEach(m => leafletMap.removeLayer(m));
+  mapMarkers = [];
+  if (mapPolyline) { leafletMap.removeLayer(mapPolyline); mapPolyline = null; }
+
+  const day   = data.days[currentMapDay];
+  const stops = day.stops;
+  const coords = [];
+
+  // 取得所有座標（用 cache，沒有就排 queue）
+  const promises = stops.map(s => geocode(s.name, s));
+  // 逐步顯示已解析的點（不等全部完成）
+  for (let i = 0; i < stops.length; i++) {
+    promises[i].then(coord => {
+      if (!coord) {
+        // 更新清單中的 badge
+        const badge = document.querySelector(`[data-map-badge="${i}"]`);
+        if (badge) { badge.textContent = '找不到位置'; badge.className = 'map-geocode-badge fail'; }
+        const letter = document.querySelector(`[data-map-letter="${i}"]`);
+        if (letter) letter.classList.add('geocode-fail');
+        return;
+      }
+      // 移除 loading badge
+      const badge = document.querySelector(`[data-map-badge="${i}"]`);
+      if (badge) badge.remove();
+
+      // 建立自訂標記
+      const icon = L.divIcon({
+        className: '',
+        html: `<div class="map-label-marker">${stopLetter(i)}</div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
+      });
+      const marker = L.marker([coord.lat, coord.lng], { icon })
+        .bindPopup(`<b>${stops[i].name}</b><br>${stops[i].depart}`)
+        .addTo(leafletMap);
+      mapMarkers.push(marker);
+
+      // 累積座標，夠多時畫路線
+      coords[i] = [coord.lat, coord.lng];
+      drawPolylineIfReady(coords, stops.length);
+    });
+  }
+}
+
+function drawPolylineIfReady(coords, total) {
+  const filled = coords.filter(Boolean);
+  // 只要有 2 個以上就畫
+  if (filled.length >= 2) {
+    if (mapPolyline) leafletMap.removeLayer(mapPolyline);
+    // 只取有值的座標，按順序（保留 index 順序）
+    const orderedCoords = [];
+    for (let j = 0; j < total; j++) {
+      if (coords[j]) orderedCoords.push(coords[j]);
+    }
+    if (orderedCoords.length >= 2) {
+      mapPolyline = L.polyline(orderedCoords, {
+        color: '#1a6b8a',
+        weight: 3,
+        opacity: 0.75,
+        dashArray: '8, 6',
+      }).addTo(leafletMap);
+      leafletMap.fitBounds(mapPolyline.getBounds(), { padding: [40, 40] });
+    }
+  }
+}
+
+// ═══════════════════════════════════════════
+// MAP STOP LIST (Inline Edit)
+// ═══════════════════════════════════════════
+function renderMapStopList() {
   const day    = data.days[currentMapDay];
   const stops  = day.stops;
   const drives = day.drives;
-  const navURL = _buildNavURL(currentMapDay);
+  const listEl = document.getElementById('map-stop-list');
+  const navEl  = document.getElementById('map-nav-btn-wrap');
 
-  const listHTML = stops.map((s, i) => {
-    const driveAfter = i < drives.length
-      ? `<div class="map-drive-row"><span class="map-drive-time">↓ 約 ${drives[i]} 分鐘</span></div>`
-      : '';
-    return `
-      <div class="map-stop-item">
-        <div class="map-num">${i + 1}</div>
-        <div class="map-stop-name">${s.name}</div>
-        <div class="map-stop-time">${s.depart}</div>
-      </div>
-      ${driveAfter}
-    `;
-  }).join('');
-
-  document.getElementById('map-content').innerHTML = `
-    <div class="map-nav-hero">
-      <div class="map-nav-hero-label">🗓 ${day.label} · ${day.theme}</div>
-      <div class="map-nav-hero-count">${stops.length} 個景點</div>
-      <a class="map-nav-hero-btn" href="${navURL}" target="_blank">
-        <span>🗺</span>
-        <span>在 Google Maps 開啟完整導航</span>
-        <span>↗</span>
-      </a>
+  listEl.innerHTML = `
+    <div class="map-stop-list-header">
+      <span class="map-stop-list-title">📍 ${day.label} · ${day.theme}</span>
+      <button class="map-add-stop-btn" onclick="mapAddStop()">＋ 新增景點</button>
     </div>
-    <div class="map-stop-list">
-      <h4>📍 Day ${currentMapDay + 1} 路線景點</h4>
-      ${listHTML}
+  `;
+
+  stops.forEach((stop, si) => {
+    const isLast = si === stops.length - 1;
+
+    // 計算抵達時間
+    let arriveStr = '';
+    if (si > 0) {
+      const prev = stops[si - 1];
+      const drv  = drives[si - 1] || 0;
+      arriveStr = minutesToTime(timeToMinutes(prev.depart) + drv);
+    }
+
+    // 是否正在 geocoding
+    const cleanName = stop.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+    const geoKey = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(cleanName) ? cleanName : cleanName + ' 澎湖 台灣';
+    const geoStatus = (geoKey in geocodeCache)
+      ? (geocodeCache[geoKey] ? 'ok' : 'fail')
+      : 'loading';
+
+    const badgeHTML = stop.coords
+      ? `<span class="map-geocode-badge manual" data-map-badge="${si}" title="已設定手動座標">📍 已設定座標</span>`
+      : geoStatus === 'loading'
+      ? `<span class="map-geocode-badge loading" data-map-badge="${si}">定位中…</span>`
+      : geoStatus === 'fail'
+      ? `<span class="map-geocode-badge fail" data-map-badge="${si}" title="Nominatim 找不到此地名，地圖上不會顯示">找不到位置</span>`
+      : '';
+
+    // 景點行
+    const row = document.createElement('div');
+    row.className = 'map-stop-row';
+    row.dataset.si = si;
+    row.innerHTML = `
+      <div class="map-stop-letter${geoStatus === 'fail' ? ' geocode-fail' : ''}" data-map-letter="${si}">${stopLetter(si)}</div>
+      <div class="map-stop-name-wrap">
+        <input class="map-inline-name" value="${escHtml(stop.name)}" data-si="${si}" data-field="name"
+          title="點擊編輯景點名稱"
+          onblur="mapInlineSaveName(${si}, this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}">
+        ${stop.note ? `<div class="map-stop-note">${escHtml(stop.note)}</div>` : ''}
+        <div class="map-coords-row">
+          <input class="map-inline-coords"
+            value="${stop.coords ? stop.coords.lat + ', ' + stop.coords.lng : ''}"
+            placeholder="貼上座標，如：23.5712, 119.5634"
+            title="從 Google Maps 右鍵複製座標貼上"
+            onblur="mapInlineSaveCoords(${si}, this.value)"
+            onkeydown="if(event.key==='Enter'){this.blur();}">
+          ${badgeHTML}
+        </div>
+      </div>
+      <div class="map-stop-times">
+        ${arriveStr ? `<div class="map-stop-arrive">抵達 ${arriveStr}</div>` : ''}
+        <input class="map-inline-time" value="${stop.depart}" data-si="${si}"
+          title="點擊編輯離開時間"
+          onblur="mapInlineSaveDepart(${si}, this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}">
+      </div>
+      <div class="map-stop-actions">
+        <a class="map-action-btn map-action-google" href="https://www.google.com/maps/search/${encodeURIComponent(_stopToPlace(stop.name))}" target="_blank" title="在 Google Maps 搜尋此景點（可複製座標）">🔍</a>
+        <button class="map-action-btn" onclick="mapMoveStop(${si},-1)" title="上移" ${si===0?'disabled':''}>▲</button>
+        <button class="map-action-btn" onclick="mapMoveStop(${si},1)" title="下移" ${isLast?'disabled':''}>▼</button>
+        <button class="map-action-btn del" onclick="mapDeleteStop(${si})" title="刪除">✕</button>
+      </div>
+    `;
+    listEl.appendChild(row);
+
+    // 車程行
+    if (!isLast) {
+      const tr = document.createElement('div');
+      tr.className = 'map-transit-row';
+      tr.innerHTML = `
+        <span class="map-transit-label">🚗</span>
+        <input class="map-inline-drive" value="約 ${drives[si]} 分鐘" data-si="${si}"
+          title="點擊編輯車程時間"
+          onfocus="this.value='${drives[si]}'; this.select();"
+          onblur="mapInlineSaveDrive(${si}, this.value)"
+          onkeydown="if(event.key==='Enter'){this.blur();}">
+        <span class="map-transit-label">→ 抵達 ${minutesToTime(timeToMinutes(stop.depart) + (drives[si]||0))}</span>
+      `;
+      listEl.appendChild(tr);
+    }
+  });
+
+  // 導航按鈕
+  navEl.innerHTML = `
+    <div class="map-nav-bottom">
+      <a class="map-nav-hero-btn" href="${_buildNavURL(currentMapDay)}" target="_blank">
+        🗺 在 Google Maps 開啟導航 ↗
+      </a>
     </div>
   `;
 }
 
-function openDayMap(di) {
-  window.open(_buildNavURL(di), '_blank');
+// HTML escape
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function jumpToMap(di) {
-  currentMapDay = di;
-  showPage('map');
+// ── Map inline save handlers ──
+
+function mapInlineSaveName(si, val) {
+  const di = currentMapDay;
+  val = val.trim();
+  if (!val) return;
+  const oldName = data.days[di].stops[si].name;
+  if (val === oldName) return;
+  // 新名稱清除 cache（需重新 geocode）
+  const cleanOld = oldName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
+  delete geocodeCache[cleanOld];
+  delete geocodeCache[cleanOld + ' 澎湖 台灣'];
+  data.days[di].stops[si].name = val;
+  // 同步行程頁
+  renderStops(di);
+  renderNavCard(di);
+  // 同步地圖清單與標記
+  renderMapStopList();
+  refreshMapMarkers();
+  showToast('✅ 景點名稱已更新');
+}
+
+function mapInlineSaveDepart(si, val) {
+  const di = currentMapDay;
+  if (!/^\d{1,2}:\d{2}$/.test(val)) {
+    // 恢復原值
+    renderMapStopList();
+    showToast('⚠️ 時間格式錯誤，請輸入 HH:MM');
+    return;
+  }
+  const hh = val.padStart(5, '0');
+  data.days[di].stops[si].depart = hh;
+  recalcTimes(di, si);
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  showToast('⏱ 時間已更新，後續景點自動重新計算');
+}
+
+function mapInlineSaveDrive(si, val) {
+  const di = currentMapDay;
+  const mins = parseInt(val);
+  if (isNaN(mins) || mins < 1) {
+    renderMapStopList();
+    return;
+  }
+  data.days[di].drives[si] = mins;
+  recalcTimes(di, si);
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  showToast('🚗 車程已更新');
+}
+
+function mapInlineSaveCoords(si, val) {
+  const di = currentMapDay;
+  const stop = data.days[di].stops[si];
+  val = val.trim();
+  if (!val) {
+    // 清除座標
+    delete stop.coords;
+    const cleanName = stop.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
+    const geoKey = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(cleanName) ? cleanName : cleanName + ' 澎湖 台灣';
+    delete geocodeCache[geoKey];
+    renderMapStopList();
+    refreshMapMarkers();
+    showToast('🗑 已清除座標');
+    return;
+  }
+  const m = val.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
+  if (!m) {
+    showToast('⚠️ 格式錯誤，請輸入如：23.5712, 119.5634');
+    renderMapStopList();
+    return;
+  }
+  const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+  stop.coords = { lat, lng };
+  // 注入 geocodeCache
+  const cleanName = stop.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
+  const geoKey = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(cleanName) ? cleanName : cleanName + ' 澎湖 台灣';
+  geocodeCache[geoKey] = { lat, lng };
+  renderMapStopList();
+  refreshMapMarkers();
+  showToast('📍 座標已設定，地圖已更新！');
+}
+
+function mapMoveStop(si, dir) {
+  const di = currentMapDay;
+  const day = data.days[di];
+  const targetIdx = si + dir;
+  if (targetIdx < 0 || targetIdx >= day.stops.length) return;
+  [day.stops[si], day.stops[targetIdx]] = [day.stops[targetIdx], day.stops[si]];
+  const driveIdx = dir === 1 ? si : si - 1;
+  if (driveIdx >= 0 && driveIdx + 1 < day.drives.length) {
+    [day.drives[driveIdx], day.drives[driveIdx + 1]] = [day.drives[driveIdx + 1], day.drives[driveIdx]];
+  }
+  recalcTimes(di);
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  refreshMapMarkers();
+  showToast('↕️ 景點已移動');
+}
+
+function mapDeleteStop(si) {
+  const di = currentMapDay;
+  const day = data.days[di];
+  if (day.stops.length <= 2) { showToast('⚠️ 至少需要保留 2 個景點'); return; }
+  day.stops.splice(si, 1);
+  if (si < day.drives.length) day.drives.splice(si, 1);
+  recalcTimes(di);
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  refreshMapMarkers();
+  showToast('🗑 已刪除景點');
+}
+
+function mapAddStop() {
+  const di = currentMapDay;
+  const day = data.days[di];
+  const lastStop = day.stops[day.stops.length - 1];
+  day.stops.push({ name: '📍 新景點', depart: lastStop.depart, stay: 60, note: '' });
+  day.drives.push(15);
+  recalcTimes(di);
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  refreshMapMarkers();
+  // 聚焦到新景點的 input
+  setTimeout(() => {
+    const inputs = document.querySelectorAll('.map-inline-name');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }, 100);
 }
 
 // ═══════════════════════════════════════════
-// EDIT STOP
+// PAGE NAV
+// ═══════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  if (name === 'itinerary') {
+    btns[0].classList.add('active');
+  } else if (name === 'map') {
+    btns[1].classList.add('active');
+    renderMap();
+    // Leaflet 需要在 visible 後才能正確計算大小
+    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 100);
+  }
+}
+
+// ═══════════════════════════════════════════
+// EDIT STOP (Modal)
 // ═══════════════════════════════════════════
 let editTarget = null;
 function editStop(di, si) {
@@ -276,6 +650,11 @@ function editStop(di, si) {
   document.getElementById('edit-note').value = stop.note || '';
   document.getElementById('edit-depart').value = stop.depart;
   document.getElementById('edit-stay').value = stop.stay || '';
+  // 填入已儲存的座標
+  const coords = stop.coords;
+  document.getElementById('edit-coords').value = coords ? `${coords.lat}, ${coords.lng}` : '';
+  document.getElementById('coords-hint').textContent = coords ? `✅ 已設定座標，地圖將直接定位` : '';
+  document.getElementById('coords-hint').style.color = 'var(--green)';
   document.getElementById('stop-modal').classList.add('open');
   updateModalHint();
 }
@@ -323,33 +702,61 @@ function updateModalHint() {
   const drive = day.drives[si] || 0;
   const isLast = si === day.stops.length - 1;
   const stayVal = parseInt(document.getElementById('edit-stay').value) || 0;
-
   let hint1 = arrivalMins !== null ? `抵達 ${minutesToTime(arrivalMins)}` : '';
   let hint2 = stayVal ? `停留 ${stayVal} 分鐘後 ${minutesToTime(leaveMins)} 離開` : `${minutesToTime(leaveMins)} 離開`;
   let hint3 = (!isLast && drive) ? `→ 下一站約 ${minutesToTime(leaveMins + drive)} 抵達` : '';
-
   hint.textContent = [hint1, hint2, hint3].filter(Boolean).join('　');
 }
 
 function saveStop() {
   const { di, si } = editTarget;
   const stop = data.days[di].stops[si];
-  stop.name = document.getElementById('edit-name').value || stop.name;
+  const newName = document.getElementById('edit-name').value || stop.name;
+  // 名稱變更時清除 geocode cache
+  if (newName !== stop.name) {
+    const cleanOld = stop.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
+    delete geocodeCache[cleanOld];
+    delete geocodeCache[cleanOld + ' 澎湖 台灣'];
+  }
+  stop.name = newName;
   stop.note = document.getElementById('edit-note').value;
   stop.depart = document.getElementById('edit-depart').value || stop.depart;
   stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
+
+  // 解析手動座標
+  const rawCoords = document.getElementById('edit-coords').value.trim();
+  if (rawCoords) {
+    const m = rawCoords.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
+    if (m) {
+      const lat = parseFloat(m[1]), lng = parseFloat(m[2]);
+      stop.coords = { lat, lng };
+      // 注入 geocodeCache，地圖直接用這個，不再 geocode
+      const cleanName = newName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
+      const geoKey = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(cleanName) ? cleanName : cleanName + ' 澎湖 台灣';
+      geocodeCache[geoKey] = { lat, lng };
+    } else {
+      showToast('⚠️ 座標格式錯誤，請輸入如：23.5712, 119.5634');
+      return;
+    }
+  } else {
+    // 清除舊座標（若之前有設定）
+    delete stop.coords;
+  }
   recalcTimes(di, si);
   closeModal();
   renderStops(di);
+  renderNavCard(di);
+  syncMapIfActive(di);
   showToast('✅ 已儲存，時間已重新計算');
 }
+
 function closeModal() {
   document.getElementById('stop-modal').classList.remove('open');
   editTarget = null;
 }
 
 // ═══════════════════════════════════════════
-// EDIT DRIVE TIME
+// EDIT DRIVE TIME (Modal)
 // ═══════════════════════════════════════════
 let driveTarget = null;
 function editDrive(di, si) {
@@ -364,6 +771,8 @@ function saveDrive() {
     data.days[di].drives[si] = val;
     recalcTimes(di);
     renderStops(di);
+    renderNavCard(di);
+    syncMapIfActive(di);
     showToast('🚗 車程已更新，時間重新計算');
   }
   closeTransitModal();
@@ -374,15 +783,16 @@ function closeTransitModal() {
 }
 
 // ═══════════════════════════════════════════
-// ADD / DELETE STOP
+// ADD / DELETE STOP (行程頁)
 // ═══════════════════════════════════════════
 function addStop(di) {
   const day = data.days[di];
   const lastStop = day.stops[day.stops.length - 1];
-  day.stops.push({ name: "🆕 新景點", depart: lastStop.depart, stay: 60, note: "" });
+  day.stops.push({ name: '🆕 新景點', depart: lastStop.depart, stay: 60, note: '' });
   day.drives.push(15);
   recalcTimes(di);
   renderStops(di);
+  renderNavCard(di);
   editStop(di, day.stops.length - 1);
 }
 function deleteStop(di, si) {
@@ -392,6 +802,8 @@ function deleteStop(di, si) {
   if (si < day.drives.length) day.drives.splice(si, 1);
   recalcTimes(di);
   renderStops(di);
+  renderNavCard(di);
+  syncMapIfActive(di);
   showToast('🗑 已刪除景點');
 }
 
@@ -399,16 +811,15 @@ function moveStop(di, si, dir) {
   const day = data.days[di];
   const targetIdx = si + dir;
   if (targetIdx < 0 || targetIdx >= day.stops.length) return;
-
   [day.stops[si], day.stops[targetIdx]] = [day.stops[targetIdx], day.stops[si]];
-
   const driveIdx = dir === 1 ? si : si - 1;
   if (driveIdx >= 0 && driveIdx + 1 < day.drives.length) {
     [day.drives[driveIdx], day.drives[driveIdx + 1]] = [day.drives[driveIdx + 1], day.drives[driveIdx]];
   }
-
   recalcTimes(di);
   renderStops(di);
+  renderNavCard(di);
+  syncMapIfActive(di);
   showToast('↕️ 景點已移動，時間已重新計算');
 }
 
@@ -419,10 +830,10 @@ function addDay() {
   const dayNum = data.days.length + 1;
   const newDay = {
     label: `Day ${dayNum}`,
-    theme: "新的一天",
+    theme: '新的一天',
     stops: [
-      { name: "🏨 住宿出發", depart: "09:00", stay: 0, note: "" },
-      { name: "📍 目的地", depart: "10:00", stay: 60, note: "" }
+      { name: '🏨 住宿出發', depart: '09:00', stay: 0, note: '' },
+      { name: '📍 目的地', depart: '10:00', stay: 60, note: '' }
     ],
     drives: [30]
   };
@@ -512,25 +923,20 @@ document.addEventListener('click', function(e) {
 });
 
 // ═══════════════════════════════════════════
-// JSON 匯出
+// JSON 匯出 / 匯入
 // ═══════════════════════════════════════════
 function exportJSON() {
   document.getElementById('export-menu').classList.remove('open');
-  // 匯出時清除 mapPlaces（已廢棄），確保乾淨
   const exportObj = JSON.parse(JSON.stringify(data));
-  delete exportObj.mapPlaces;
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
   a.download = `${safeName}行程.json`;
   a.click();
-  showToast('📋 JSON 已匯出！可分享給其他人匯入');
+  showToast('📋 JSON 已匯出！');
 }
 
-// ═══════════════════════════════════════════
-// JSON 匯入
-// ═══════════════════════════════════════════
 function importJSON() {
   document.getElementById('export-menu').classList.remove('open');
   const input = document.createElement('input');
@@ -543,20 +949,16 @@ function importJSON() {
     reader.onload = function(ev) {
       try {
         const parsed = JSON.parse(ev.target.result);
-        // 驗證基本結構
         if (!parsed.title || !Array.isArray(parsed.days)) {
-          showToast('⚠️ JSON 格式不正確，請確認是由本程式匯出的行程檔');
+          showToast('⚠️ JSON 格式不正確');
           return;
         }
-        // 清除廢棄的 mapPlaces
-        delete parsed.mapPlaces;
-        // 寫入 localStorage 並更新
         data = parsed;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         renderAll();
         showToast(`✅ 已匯入「${data.title}」，共 ${data.days.length} 天行程！`);
       } catch(err) {
-        showToast('⚠️ 讀取 JSON 失敗，請確認檔案格式正確');
+        showToast('⚠️ 讀取 JSON 失敗');
         console.error('JSON 匯入失敗', err);
       }
     };
@@ -565,12 +967,9 @@ function importJSON() {
   input.click();
 }
 
-
 function exportHTML() {
   document.getElementById('export-menu').classList.remove('open');
-  // 移除廢棄的 mapPlaces，保持 data 乾淨
   const exportObj = JSON.parse(JSON.stringify(data));
-  delete exportObj.mapPlaces;
   const dataStr = JSON.stringify(exportObj);
   const currentHTML = document.documentElement.outerHTML;
   const exported = currentHTML.replace(
@@ -583,7 +982,7 @@ function exportHTML() {
   const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
   a.download = `${safeName}行程.html`;
   a.click();
-  showToast('💾 HTML 已下載，已嵌入最新行程！');
+  showToast('💾 HTML 已下載！');
 }
 
 // ═══════════════════════════════════════════
@@ -618,7 +1017,6 @@ function buildCaptureHTML(di) {
   day.stops.forEach((stop, si) => {
     const isLast = si === day.stops.length - 1;
     const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
-
     let arriveTag = '';
     if (si > 0) {
       const prevStop = day.stops[si - 1];
@@ -642,20 +1040,13 @@ function buildCaptureHTML(di) {
       </div>
     `;
     if (!isLast) {
-      stopsHTML += `
-        <div class="cap-transit">
-          <span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span>
-        </div>
-      `;
+      stopsHTML += `<div class="cap-transit"><span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span></div>`;
     }
   });
 
   const card = document.createElement('div');
   card.className = 'capture-card';
-  card.style.position = 'fixed';
-  card.style.left = '-9999px';
-  card.style.top = '0';
-  card.style.width = '680px';
+  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;';
   card.innerHTML = `
     <div class="capture-header">
       <span class="ch-emoji">🏝</span>
@@ -663,9 +1054,7 @@ function buildCaptureHTML(di) {
       <div class="ch-sub">${data.subtitle}</div>
       <div class="ch-day">🗓 ${day.label} · ${day.theme}</div>
     </div>
-    <div class="capture-body">
-      ${stopsHTML}
-    </div>
+    <div class="capture-body">${stopsHTML}</div>
     <div class="capture-footer">由互動行程產生 · ${data.title}</div>
   `;
   return card;
@@ -674,30 +1063,21 @@ function buildCaptureHTML(di) {
 async function exportDayImg(di) {
   closeImgExport();
   showProgress(`正在產生 Day ${di + 1} 圖片…`, 30);
-
   await new Promise(r => setTimeout(r, 100));
   const card = buildCaptureHTML(di);
   document.body.appendChild(card);
-
   try {
-    showProgress(`正在渲染…`, 60);
+    showProgress('正在渲染…', 60);
     await new Promise(r => setTimeout(r, 200));
-    const canvas = await html2canvas(card, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      width: 680,
-      logging: false
-    });
-    showProgress(`正在下載…`, 90);
+    const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 680, logging: false });
+    showProgress('正在下載…', 90);
     const a = document.createElement('a');
-    const dayNum = di + 1;
     const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
-    a.download = `${safeName}_Day${dayNum}.png`;
+    a.download = `${safeName}_Day${di + 1}.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
     hideProgress();
-    showToast(`🖼️ Day ${dayNum} 圖片已下載！`);
+    showToast(`🖼️ Day ${di + 1} 圖片已下載！`);
   } catch(e) {
     hideProgress();
     showToast('⚠️ 圖片產生失敗，請重試');
@@ -716,13 +1096,7 @@ async function exportAllDaysImg() {
     document.body.appendChild(card);
     try {
       await new Promise(r => setTimeout(r, 200));
-      const canvas = await html2canvas(card, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        width: 680,
-        logging: false
-      });
+      const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 680, logging: false });
       const a = document.createElement('a');
       const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
       a.download = `${safeName}_Day${di + 1}.png`;
@@ -747,16 +1121,12 @@ async function exportPDF() {
   showProgress('正在準備列印…', 30);
   await new Promise(r => setTimeout(r, 200));
   hideProgress();
-
   const printHTML = buildPrintHTML();
   const printWin = window.open('', '_blank', 'width=800,height=900');
   printWin.document.write(printHTML);
   printWin.document.close();
   printWin.onload = () => {
-    setTimeout(() => {
-      printWin.focus();
-      printWin.print();
-    }, 500);
+    setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
   };
   showToast('📄 列印視窗已開啟，選擇「儲存為 PDF」');
 }
@@ -780,10 +1150,7 @@ function buildPrintHTML() {
         : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
       stopsHTML += `
         <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
-          <div class="cap-left">
-            <div class="cap-num">${si + 1}</div>
-            <div class="cap-line"></div>
-          </div>
+          <div class="cap-left"><div class="cap-num">${si + 1}</div><div class="cap-line"></div></div>
           <div class="cap-content">
             <div class="cap-name">${stop.name}</div>
             <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
@@ -802,59 +1169,34 @@ function buildPrintHTML() {
     `;
   });
 
-  return `<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-<meta charset="UTF-8">
-<title>${data.title} · 行程</title>
+  return `<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>${data.title}</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --ocean: #1a6b8a; --sky: #5aa8c8; --sky-light: #a8d4e8; --sand: #f5ede0;
-  --coral: #e07a5f; --dark: #1c2b35; --mid: #4a6274; --light: #eaf4f8;
-  --white: #fff; --border: #cce0ea; --green: #2d9e6b; --green-bg: #d8f0e4;
-  --amber: #8a6200; --amber-bg: #fef3cd; --amber-light: #b07c20; --amber-light-bg: #fff8e6;
-  --red: #9b3020; --red-bg: #fce4e0;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Noto Sans TC', sans-serif; color: var(--dark); background: white; }
-.print-header { background: linear-gradient(135deg, var(--ocean), var(--sky)); color: white; padding: 32px; text-align: center; margin-bottom: 24px; }
-.print-header h1 { font-family: 'Noto Serif TC', serif; font-size: 1.8rem; letter-spacing: 0.1em; }
-.print-header p { font-size: 0.9rem; opacity: 0.85; margin-top: 6px; }
-.print-day-card { margin: 0 16px 20px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; page-break-inside: avoid; }
-.capture-header { background: linear-gradient(90deg, var(--ocean), var(--sky)); color: white; padding: 14px 20px; }
-.ch-day { font-family: 'Noto Serif TC', serif; font-size: 0.95rem; font-weight: 600; }
-.capture-body { padding: 12px 20px 16px; background: white; }
-.capture-stop-row { display: flex; align-items: stretch; }
-.cap-left { display: flex; flex-direction: column; align-items: center; width: 30px; flex-shrink: 0; margin-right: 12px; }
-.cap-num { width: 24px; height: 24px; border-radius: 50%; background: var(--ocean); color: white; font-size: 0.68rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 12px; }
-.cap-line { width: 2px; background: var(--border); flex: 1; margin-top: 4px; }
-.cap-last .cap-line { display: none; }
-.cap-content { flex: 1; padding: 10px 0 8px; border-bottom: 1px solid #f5f5f5; }
-.cap-last .cap-content { border-bottom: none; }
-.cap-name { font-family: 'Noto Serif TC', serif; font-size: 0.9rem; font-weight: 600; }
-.cap-tags { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
-.tag { font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; }
-.tag-arrive { background: var(--amber-bg); color: var(--amber); }
-.tag-leave  { background: #fff8e6; color: #b07c20; }
-.tag-note { background: var(--red-bg); color: var(--red); }
-.cap-transit { padding: 3px 0 3px 42px; }
-.cap-transit-text { font-size: 0.7rem; color: var(--sky); background: var(--light); padding: 2px 7px; border-radius: 6px; }
-.print-footer { text-align: center; font-size: 0.72rem; color: var(--mid); padding: 16px; margin-top: 8px; }
-@media print {
-  body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-  .print-day-card { page-break-inside: avoid; margin: 0 0 16px; }
-  @page { margin: 15mm; size: A4; }
-}
-</style>
-</head>
-<body>
-<div class="print-header">
-  <h1>${data.title}</h1>
-  <p>${data.subtitle}</p>
-</div>
+:root{--ocean:#1a6b8a;--sky:#5aa8c8;--sand:#f5ede0;--dark:#1c2b35;--mid:#4a6274;--light:#eaf4f8;--white:#fff;--border:#cce0ea;--green:#2d9e6b;--green-bg:#d8f0e4;--amber:#8a6200;--amber-bg:#fef3cd;--amber-light:#b07c20;--amber-light-bg:#fff8e6;--red:#9b3020;--red-bg:#fce4e0;}
+*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Noto Sans TC',sans-serif;color:var(--dark);background:white;}
+.print-header{background:linear-gradient(135deg,var(--ocean),var(--sky));color:white;padding:32px;text-align:center;margin-bottom:24px;}
+.print-header h1{font-family:'Noto Serif TC',serif;font-size:1.8rem;letter-spacing:0.1em;}
+.print-header p{font-size:0.9rem;opacity:0.85;margin-top:6px;}
+.print-day-card{margin:0 16px 20px;border:1px solid var(--border);border-radius:12px;overflow:hidden;page-break-inside:avoid;}
+.capture-header{background:linear-gradient(90deg,var(--ocean),var(--sky));color:white;padding:14px 20px;}
+.ch-day{font-family:'Noto Serif TC',serif;font-size:0.95rem;font-weight:600;}
+.capture-body{padding:12px 20px 16px;background:white;}
+.capture-stop-row{display:flex;align-items:stretch;}
+.cap-left{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;margin-right:12px;}
+.cap-num{width:24px;height:24px;border-radius:50%;background:var(--ocean);color:white;font-size:0.68rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:12px;}
+.cap-line{width:2px;background:var(--border);flex:1;margin-top:4px;}.cap-last .cap-line{display:none;}
+.cap-content{flex:1;padding:10px 0 8px;border-bottom:1px solid #f5f5f5;}.cap-last .cap-content{border-bottom:none;}
+.cap-name{font-family:'Noto Serif TC',serif;font-size:0.9rem;font-weight:600;}
+.cap-tags{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+.tag{font-size:0.68rem;padding:2px 7px;border-radius:8px;}
+.tag-arrive{background:var(--amber-bg);color:var(--amber);}.tag-leave{background:#fff8e6;color:#b07c20;}.tag-note{background:var(--red-bg);color:var(--red);}
+.cap-transit{padding:3px 0 3px 42px;}
+.cap-transit-text{font-size:0.7rem;color:var(--sky);background:var(--light);padding:2px 7px;border-radius:6px;}
+@media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact;}.print-day-card{page-break-inside:avoid;margin:0 0 16px;}@page{margin:15mm;size:A4;}}
+</style></head><body>
+<div class="print-header"><h1>${data.title}</h1><p>${data.subtitle}</p></div>
 ${daysHTML}
-<div class="print-footer">由互動行程產生 · 請在列印對話框選擇「另存為 PDF」</div>
+<div style="text-align:center;font-size:0.72rem;color:var(--mid);padding:16px;">由互動行程產生</div>
 </body></html>`;
 }
 
@@ -868,22 +1210,6 @@ function showProgress(msg, pct) {
 }
 function hideProgress() {
   document.getElementById('progress-overlay').classList.remove('open');
-}
-
-// ═══════════════════════════════════════════
-// PAGE NAV
-// ═══════════════════════════════════════════
-function showPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`page-${name}`).classList.add('active');
-  const btns = document.querySelectorAll('.nav-btn');
-  if (name === 'itinerary') {
-    btns[0].classList.add('active');
-  } else if (name === 'map') {
-    // 切換到地圖時，永遠依最新 data 重新渲染
-    renderMap();
-  }
 }
 
 // ═══════════════════════════════════════════

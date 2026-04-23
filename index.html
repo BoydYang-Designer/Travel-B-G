@@ -6,9 +6,12 @@
 <title id="page-title">澎湖三日遊 · 互動行程</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <!-- html2canvas for image export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -25,47 +28,29 @@
     <div class="export-menu" id="export-menu">
       <button class="export-menu-item" onclick="saveData()">
         <span class="em-icon">💾</span>
-        <div>
-          <div>儲存行程</div>
-          <div style="font-size:0.72rem;color:var(--mid)">存至本機瀏覽器</div>
-        </div>
+        <div><div>儲存行程</div><div style="font-size:0.72rem;color:var(--mid)">存至本機瀏覽器</div></div>
       </button>
       <button class="export-menu-item" onclick="exportHTML()">
         <span class="em-icon">📁</span>
-        <div>
-          <div>匯出 HTML</div>
-          <div style="font-size:0.72rem;color:var(--mid)">下載完整行程檔</div>
-        </div>
+        <div><div>匯出 HTML</div><div style="font-size:0.72rem;color:var(--mid)">下載完整行程檔</div></div>
       </button>
       <div class="export-menu-sep"></div>
       <button class="export-menu-item" onclick="exportJSON()">
         <span class="em-icon">📋</span>
-        <div>
-          <div>匯出 JSON</div>
-          <div style="font-size:0.72rem;color:var(--mid)">分享行程給他人匯入</div>
-        </div>
+        <div><div>匯出 JSON</div><div style="font-size:0.72rem;color:var(--mid)">分享行程給他人匯入</div></div>
       </button>
       <button class="export-menu-item" onclick="importJSON()">
         <span class="em-icon">📥</span>
-        <div>
-          <div>匯入 JSON</div>
-          <div style="font-size:0.72rem;color:var(--mid)">載入他人分享的行程</div>
-        </div>
+        <div><div>匯入 JSON</div><div style="font-size:0.72rem;color:var(--mid)">載入他人分享的行程</div></div>
       </button>
       <div class="export-menu-sep"></div>
       <button class="export-menu-item" onclick="openImgExport()">
         <span class="em-icon">🖼️</span>
-        <div>
-          <div>匯出圖片</div>
-          <div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div>
-        </div>
+        <div><div>匯出圖片</div><div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div></div>
       </button>
       <button class="export-menu-item" onclick="exportPDF()">
         <span class="em-icon">📄</span>
-        <div>
-          <div>匯出 PDF</div>
-          <div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div>
-        </div>
+        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div></div>
       </button>
     </div>
   </div>
@@ -86,11 +71,19 @@
 <!-- MAP PAGE -->
 <div id="page-map" class="page">
   <div class="map-page-header">
-    <h2>🗺 路線地圖</h2>
-    <p>選擇天數，點按鈕直接開啟 Google Maps 導航</p>
+    <h2>🗺 互動地圖</h2>
+    <p>點擊景點可編輯，拖曳地圖縮放</p>
   </div>
   <div class="map-day-tabs" id="map-tabs"></div>
-  <div id="map-content"></div>
+
+  <!-- Leaflet 地圖 -->
+  <div id="leaflet-map"></div>
+
+  <!-- 景點清單（可編輯） -->
+  <div class="map-stop-list" id="map-stop-list"></div>
+
+  <!-- 導航按鈕 -->
+  <div id="map-nav-btn-wrap"></div>
 </div>
 
 <!-- Stop Edit Modal -->
@@ -101,6 +94,9 @@
     <input type="text" id="edit-name" placeholder="景點名稱">
     <label>備註（可選）</label>
     <input type="text" id="edit-note" placeholder="如：大菓葉・鯨魚洞">
+    <label>📍 Google 座標（可選）</label>
+    <input type="text" id="edit-coords" placeholder="從 Google Maps 右鍵複製，如：23.5712, 119.5634">
+    <p id="coords-hint" style="font-size:0.72rem;margin-top:4px;min-height:1.1em"></p>
     <div class="modal-row">
       <div>
         <label>離開時間</label>
