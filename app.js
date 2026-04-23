@@ -46,6 +46,33 @@ function saveData() {
 let data = loadData();
 
 // ═══════════════════════════════════════════
+// UNDO STACK（最近 20 次操作）
+// ═══════════════════════════════════════════
+const undoStack = [];
+function pushUndo() {
+  undoStack.push(JSON.stringify(data));
+  if (undoStack.length > 20) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length) { showToast('⚠️ 已無可復原的操作'); return; }
+  data = JSON.parse(undoStack.pop());
+  renderAll();
+  autosave();
+  showToast('↩ 已復原上一步');
+}
+
+// ═══════════════════════════════════════════
+// AUTOSAVE（每次修改後 300ms debounce）
+// ═══════════════════════════════════════════
+let _autosaveTimer = null;
+function autosave() {
+  clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(() => {
+    try { storageSet(STORAGE_KEY, JSON.stringify(data)); } catch(e) { console.warn('autosave 失敗', e); }
+  }, 300);
+}
+
+// ═══════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════
 function timeToMinutes(t) {
@@ -65,7 +92,8 @@ function stayLabel(mins) {
   return m ? `停留 ${h} 小時 ${m} 分` : `停留 ${h} 小時`;
 }
 
-// 重新計算從 fromIdx 之後的所有時間
+// 重新計算從 fromIdx 之後所有站的「抵達時間」（arrive）
+// depart 保持使用者設定值不動；若 stop 無 depart 才由 arrive+stay 推算初始值
 function recalcTimes(dayIdx, fromIdx) {
   const day = data.days[dayIdx];
   const start = (fromIdx !== undefined) ? fromIdx : 0;
@@ -73,8 +101,13 @@ function recalcTimes(dayIdx, fromIdx) {
     const leaveMins   = timeToMinutes(day.stops[i].depart);
     const driveMins   = day.drives[i] || 0;
     const nextArrMins = leaveMins + driveMins;
-    const nextStay    = day.stops[i + 1].stay || 0;
-    day.stops[i + 1].depart = minutesToTime(nextArrMins + nextStay);
+    // 儲存「抵達時間」作為 derived 欄位
+    day.stops[i + 1].arrive = minutesToTime(nextArrMins);
+    // 僅在使用者尚未設定 depart 時，以 arrive+stay 推算初始離開時間
+    if (!day.stops[i + 1]._departUserSet) {
+      const nextStay = day.stops[i + 1].stay || 0;
+      day.stops[i + 1].depart = minutesToTime(nextArrMins + nextStay);
+    }
   }
 }
 
@@ -108,8 +141,8 @@ function renderItinerary() {
     card.className = 'day-card';
     card.innerHTML = `
       <div class="day-header">
-        <span class="day-badge" onclick="editDay(${di})" title="點擊編輯天數資訊">🗓 ${day.label} <span style="font-size:0.65rem;opacity:0.7">✏️</span></span>
-        <span class="day-theme-tag" onclick="editDay(${di})">${day.theme}</span>
+        <span class="day-badge" onclick="editDay(${di})" title="點擊編輯天數資訊">🗓 ${escHtml(day.label)} <span style="font-size:0.65rem;opacity:0.7">✏️</span></span>
+        <span class="day-theme-tag" onclick="editDay(${di})">${escHtml(day.theme)}</span>
         <div class="day-header-actions">
           <button class="day-delete-btn" onclick="deleteDay(${di})" title="刪除此天">✕</button>
         </div>
@@ -144,7 +177,9 @@ function renderStops(di) {
     const leaveTag = !isLast
       ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
       : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
-    const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+    const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
+    const stayTag = stayLabel(stop.stay)
+      ? `<span class="tag tag-stay">${stayLabel(stop.stay)}</span>` : '';
 
     row.innerHTML = `
       <div class="stop-left">
@@ -152,8 +187,8 @@ function renderStops(di) {
         <div class="stop-line"></div>
       </div>
       <div class="stop-content" onclick="editStop(${di},${si})">
-        <div class="stop-name">${stop.name} <span class="edit-icon">✏️</span></div>
-        <div class="stop-meta">${arriveTag}${leaveTag}${noteTag}</div>
+        <div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
+        <div class="stop-meta">${arriveTag}${leaveTag}${stayTag}${noteTag}</div>
       </div>
       <div class="stop-move-wrap">
         <button class="stop-move-btn" onclick="moveStop(${di},${si},-1)" title="上移" ${si === 0 ? 'disabled' : ''}>▲</button>
@@ -332,9 +367,22 @@ async function refreshMapMarkers() {
     promises[i].then(coord => {
       if (!coord) {
         const badge = document.querySelector(`[data-map-badge="${i}"]`);
-        if (badge) { badge.textContent = '找不到位置'; badge.className = 'map-geocode-badge fail'; }
+        if (badge) { badge.textContent = '找不到位置，請輸入座標'; badge.className = 'map-geocode-badge fail'; }
         const letter = document.querySelector(`[data-map-letter="${i}"]`);
         if (letter) letter.classList.add('geocode-fail');
+        // U-03：自動展開並聚焦座標輸入欄，引導使用者手動輸入
+        const row = document.querySelector(`.map-stop-row[data-si="${i}"]`);
+        if (row) {
+          const coordInput = row.querySelector('.map-inline-coords');
+          if (coordInput) {
+            coordInput.style.borderColor = 'var(--amber)';
+            coordInput.title = '⚠️ 自動定位失敗，請從 Google Maps 右鍵複製座標貼上';
+            // 僅在此行是第一個失敗的景點時才聚焦，避免搶焦
+            if (!document.querySelector('.map-inline-coords[style*="amber"]')) {
+              setTimeout(() => coordInput.focus(), 300);
+            }
+          }
+        }
         return;
       }
       const badge = document.querySelector(`[data-map-badge="${i}"]`);
@@ -532,6 +580,8 @@ function mapInlineSaveName(si, val) {
   delete geocodeCache[cleanOld];
   delete geocodeCache[cleanOld + ' 澎湖 台灣'];
   data.days[di].stops[si].name = val;
+  pushUndo();
+  autosave();
   // 同步行程頁
   renderStops(di);
   renderNavCard(di);
@@ -551,7 +601,9 @@ function mapInlineSaveDepart(si, val) {
   }
   const hh = val.padStart(5, '0');
   data.days[di].stops[si].depart = hh;
+  data.days[di].stops[si]._departUserSet = true; // 使用者明確設定
   recalcTimes(di, si);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
@@ -567,6 +619,7 @@ function mapInlineSaveDrive(si, val) {
   }
   data.days[di].drives[si] = mins;
   recalcTimes(di, si);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
@@ -600,6 +653,7 @@ function mapInlineSaveCoords(si, val) {
   const cleanName = stop.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu,'').trim();
   const geoKey = /澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(cleanName) ? cleanName : cleanName + ' 澎湖 台灣';
   geocodeCache[geoKey] = { lat, lng };
+  autosave();
   renderMapStopList();
   refreshMapMarkers();
   showToast('📍 座標已設定，地圖已更新！');
@@ -610,12 +664,14 @@ function mapMoveStop(si, dir) {
   const day = data.days[di];
   const targetIdx = si + dir;
   if (targetIdx < 0 || targetIdx >= day.stops.length) return;
+  pushUndo();
   [day.stops[si], day.stops[targetIdx]] = [day.stops[targetIdx], day.stops[si]];
   const driveIdx = dir === 1 ? si : si - 1;
   if (driveIdx >= 0 && driveIdx + 1 < day.drives.length) {
     [day.drives[driveIdx], day.drives[driveIdx + 1]] = [day.drives[driveIdx + 1], day.drives[driveIdx]];
   }
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
@@ -627,9 +683,11 @@ function mapDeleteStop(si) {
   const di = currentMapDay;
   const day = data.days[di];
   if (day.stops.length <= 2) { showToast('⚠️ 至少需要保留 2 個景點'); return; }
+  pushUndo();
   day.stops.splice(si, 1);
   if (si < day.drives.length) day.drives.splice(si, 1);
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
@@ -641,9 +699,11 @@ function mapAddStop() {
   const di = currentMapDay;
   const day = data.days[di];
   const lastStop = day.stops[day.stops.length - 1];
+  pushUndo();
   day.stops.push({ name: '📍 新景點', depart: lastStop.depart, stay: 60, note: '' });
   day.drives.push(15);
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
@@ -755,6 +815,7 @@ function saveStop() {
   stop.name = newName;
   stop.note = document.getElementById('edit-note').value;
   stop.depart = document.getElementById('edit-depart').value || stop.depart;
+  stop._departUserSet = true; // 使用者明確設定，recalcTimes 不覆寫
   stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
 
   // 解析手動座標
@@ -778,6 +839,8 @@ function saveStop() {
   }
   recalcTimes(di, si);
   closeModal();
+  pushUndo();
+  autosave();
   renderStops(di);
   renderNavCard(di);
   syncMapIfActive(di);
@@ -804,6 +867,8 @@ function saveDrive() {
   if (val > 0) {
     data.days[di].drives[si] = val;
     recalcTimes(di);
+    pushUndo();
+    autosave();
     renderStops(di);
     renderNavCard(di);
     syncMapIfActive(di);
@@ -822,9 +887,11 @@ function closeTransitModal() {
 function addStop(di) {
   const day = data.days[di];
   const lastStop = day.stops[day.stops.length - 1];
+  pushUndo();
   day.stops.push({ name: '🆕 新景點', depart: lastStop.depart, stay: 60, note: '' });
   day.drives.push(15);
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   editStop(di, day.stops.length - 1);
@@ -832,9 +899,11 @@ function addStop(di) {
 function deleteStop(di, si) {
   const day = data.days[di];
   if (day.stops.length <= 2) { showToast('⚠️ 至少需要保留 2 個景點'); return; }
+  pushUndo();
   day.stops.splice(si, 1);
   if (si < day.drives.length) day.drives.splice(si, 1);
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   syncMapIfActive(di);
@@ -845,12 +914,14 @@ function moveStop(di, si, dir) {
   const day = data.days[di];
   const targetIdx = si + dir;
   if (targetIdx < 0 || targetIdx >= day.stops.length) return;
+  pushUndo();
   [day.stops[si], day.stops[targetIdx]] = [day.stops[targetIdx], day.stops[si]];
   const driveIdx = dir === 1 ? si : si - 1;
   if (driveIdx >= 0 && driveIdx + 1 < day.drives.length) {
     [day.drives[driveIdx], day.drives[driveIdx + 1]] = [day.drives[driveIdx + 1], day.drives[driveIdx]];
   }
   recalcTimes(di);
+  autosave();
   renderStops(di);
   renderNavCard(di);
   syncMapIfActive(di);
@@ -871,7 +942,9 @@ function addDay() {
     ],
     drives: [30]
   };
+  pushUndo();
   data.days.push(newDay);
+  autosave();
   renderItinerary();
   showToast(`✅ 已新增 Day ${dayNum}，請點擊標題編輯資訊`);
   setTimeout(() => {
@@ -884,7 +957,9 @@ function deleteDay(di) {
   if (data.days.length <= 1) { showToast('⚠️ 至少需要保留 1 天'); return; }
   const dayLabel = data.days[di].label;
   if (!confirm(`確定要刪除「${dayLabel}」嗎？`)) return;
+  pushUndo();
   data.days.splice(di, 1);
+  autosave();
   renderItinerary();
   showToast(`🗑 已刪除 ${dayLabel}`);
 }
@@ -901,9 +976,11 @@ function editDay(di) {
 }
 function saveDayInfo() {
   const di = editDayTarget;
+  pushUndo();
   data.days[di].label = document.getElementById('edit-day-label').value || data.days[di].label;
   data.days[di].theme = document.getElementById('edit-day-theme').value || data.days[di].theme;
   closeDayModal();
+  autosave();
   renderItinerary();
   showToast('✅ 天數資訊已更新');
 }
@@ -920,8 +997,10 @@ function editTripTitle() {
   document.getElementById('title-modal').classList.add('open');
 }
 function saveTripTitle() {
+  pushUndo();
   data.title = document.getElementById('edit-trip-title').value || data.title;
   closeTitleModal();
+  autosave();
   renderAll();
   showToast('✅ 旅遊名稱已更新');
 }
@@ -934,8 +1013,10 @@ function editSubtitle() {
   document.getElementById('subtitle-modal').classList.add('open');
 }
 function saveSubtitle() {
+  pushUndo();
   data.subtitle = document.getElementById('edit-subtitle').value || data.subtitle;
   closeSubtitleModal();
+  autosave();
   renderAll();
   showToast('✅ 副標題已更新');
 }
@@ -947,7 +1028,10 @@ function closeSubtitleModal() {
 // EXPORT MENU
 // ═══════════════════════════════════════════
 function toggleExportMenu() {
-  document.getElementById('export-menu').classList.toggle('open');
+  const menu = document.getElementById('export-menu');
+  const trigger = document.getElementById('export-trigger');
+  const isOpen = menu.classList.toggle('open');
+  if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
 document.addEventListener('click', function(e) {
   const wrap = document.querySelector('.export-wrap');
@@ -971,6 +1055,21 @@ function exportJSON() {
   showToast('📋 JSON 已匯出！');
 }
 
+// ═══════════════════════════════════════════
+// JSON VALIDATION
+// ═══════════════════════════════════════════
+function validateData(d) {
+  if (!d || typeof d.title !== 'string' || !Array.isArray(d.days)) return false;
+  return d.days.every(day =>
+    Array.isArray(day.stops) && day.stops.length >= 2 &&
+    Array.isArray(day.drives) &&
+    day.drives.length === day.stops.length - 1 &&
+    day.stops.every(s => typeof s.depart === 'string') &&
+    typeof day.label === 'string' &&
+    typeof day.theme === 'string'
+  );
+}
+
 function importJSON() {
   document.getElementById('export-menu').classList.remove('open');
   const input = document.createElement('input');
@@ -983,12 +1082,12 @@ function importJSON() {
     reader.onload = function(ev) {
       try {
         const parsed = JSON.parse(ev.target.result);
-        if (!parsed.title || !Array.isArray(parsed.days)) {
-          showToast('⚠️ JSON 格式不正確');
+        if (!validateData(parsed)) {
+          showToast('⚠️ JSON 格式不正確或缺少必要欄位');
           return;
         }
         data = parsed;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        storageSet(STORAGE_KEY, JSON.stringify(data));
         renderAll();
         showToast(`✅ 已匯入「${data.title}」，共 ${data.days.length} 天行程！`);
       } catch(err) {
@@ -1018,6 +1117,7 @@ function resetToDefault() {
 function exportHTML() {
   document.getElementById('export-menu').classList.remove('open');
   const dataStr = JSON.stringify(JSON.parse(JSON.stringify(data)));
+  const newStorageKey = `itinerary_${Date.now()}`;
 
   // 取得 inline style
   const styleEl = document.getElementById('main-style');
@@ -1032,16 +1132,14 @@ function exportHTML() {
     return;
   }
 
-  // 替換 DEFAULT_DATA 為目前行程資料
-  jsText = jsText.replace(
-    /^const DEFAULT_DATA = .*$/m,
-    `const DEFAULT_DATA = ${dataStr};`
-  );
-  // 換新的 STORAGE_KEY 避免快取干擾
-  jsText = jsText.replace(
-    /^const STORAGE_KEY = .*$/m,
-    `const STORAGE_KEY = 'itinerary_${Date.now()}';`
-  );
+  // 以 placeholder 精準替換，避免正則誤匹配行程內容
+  const DATA_PLACEHOLDER  = '__EXPORT_DATA_PLACEHOLDER__';
+  const KEY_PLACEHOLDER   = '__EXPORT_KEY_PLACEHOLDER__';
+  jsText = jsText.replace(/^const DEFAULT_DATA = .*$/m,  `const DEFAULT_DATA = ${DATA_PLACEHOLDER};`);
+  jsText = jsText.replace(/^const STORAGE_KEY = .*$/m,   `const STORAGE_KEY = '${KEY_PLACEHOLDER}';`);
+  // 再以字串替換（不走正則，安全處理任意 JSON 字元）
+  jsText = jsText.replace(DATA_PLACEHOLDER, dataStr);
+  jsText = jsText.replace(KEY_PLACEHOLDER,  newStorageKey);
 
   const fullHTML = `<!DOCTYPE html>
 <html lang="zh-TW">
@@ -1074,15 +1172,6 @@ ${jsText}
   showToast('💾 index.html 已下載（含完整行程）！');
 }
 
-function _downloadHTML(htmlContent, dataStr) {
-  const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
-  a.download = `${safeName}行程.html`;
-  a.click();
-  showToast('💾 HTML 已下載（含完整行程）！');
-}
 
 // ═══════════════════════════════════════════
 // IMAGE EXPORT
@@ -1115,7 +1204,7 @@ function buildCaptureHTML(di) {
   let stopsHTML = '';
   day.stops.forEach((stop, si) => {
     const isLast = si === day.stops.length - 1;
-    const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+    const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
     let arriveTag = '';
     if (si > 0) {
       const prevStop = day.stops[si - 1];
@@ -1133,7 +1222,7 @@ function buildCaptureHTML(di) {
           <div class="cap-line"></div>
         </div>
         <div class="cap-content">
-          <div class="cap-name">${stop.name}</div>
+          <div class="cap-name">${escHtml(stop.name)}</div>
           <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
         </div>
       </div>
@@ -1273,7 +1362,7 @@ function buildPrintHTML(mapImgsByDay) {
     let stopsHTML = '';
     day.stops.forEach((stop, si) => {
       const isLast = si === day.stops.length - 1;
-      const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+      const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
       let arriveTag = '';
       if (si > 0) {
         const prevStop = day.stops[si - 1];
@@ -1288,7 +1377,7 @@ function buildPrintHTML(mapImgsByDay) {
         <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
           <div class="cap-left"><div class="cap-num">${si + 1}</div><div class="cap-line"></div></div>
           <div class="cap-content">
-            <div class="cap-name">${stop.name}</div>
+            <div class="cap-name">${escHtml(stop.name)}</div>
             <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
           </div>
         </div>
@@ -1374,6 +1463,16 @@ function showToast(msg) {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
+});
+
+// Ctrl+Z / Cmd+Z 快捷鍵復原
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+    // 避免在輸入框內攔截
+    if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+    e.preventDefault();
+    undo();
+  }
 });
 
 // ═══════════════════════════════════════════
