@@ -3,15 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="page-title">澎湖三日遊 · 互動行程</title>
+<title>澎湖三日遊 · 互動行程</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
-<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- html2canvas for image export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style id="main-style">
+
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -345,6 +344,23 @@ body {
   border: 1.5px dashed var(--sky);
   flex-shrink: 0;
 }
+.transit-icon-wrap.walk {
+  color: var(--green);
+  border-color: var(--green);
+  background: var(--green-bg);
+}
+.transit-mode-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.68rem;
+  color: var(--mid);
+  cursor: pointer;
+  padding: 1px 6px;
+  transition: all 0.15s;
+  line-height: 1.5;
+}
+.transit-mode-toggle:hover { background: var(--light); border-color: var(--sky); color: var(--ocean); }
 .transit-line-bot { width: 2px; flex: 1; min-height: 6px; background: var(--border); }
 .transit-info {
   font-size: 0.74rem;
@@ -817,6 +833,25 @@ body {
   font-size: 0.68rem;
   color: var(--mid);
 }
+/* Google Maps query button */
+.map-gmaps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff8e6;
+  border: 1.5px solid #f0c040;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  color: #7a5200;
+  cursor: pointer;
+  padding: 2px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+.map-gmaps-btn:hover { background: #fef0c0; border-color: #d4a800; color: #5a3c00; }
 
 /* Error/loading badge */
 .map-geocode-badge {
@@ -1154,10 +1189,10 @@ body {
   margin-left: auto;
 }
 
+
 </style>
 </head>
 <body>
-
 <!-- NAV -->
 <nav class="nav">
   <span class="nav-title" onclick="editTripTitle()" title="點擊編輯旅遊名稱">
@@ -1226,14 +1261,8 @@ body {
     <p>點擊景點可編輯，拖曳地圖縮放</p>
   </div>
   <div class="map-day-tabs" id="map-tabs"></div>
-
-  <!-- Leaflet 地圖 -->
   <div id="leaflet-map"></div>
-
-  <!-- 景點清單（可編輯） -->
   <div class="map-stop-list" id="map-stop-list"></div>
-
-  <!-- 導航按鈕 -->
   <div id="map-nav-btn-wrap"></div>
 </div>
 
@@ -1267,10 +1296,15 @@ body {
 </div>
 
 <!-- Transit Edit Modal -->
-<div class="modal-overlay transit-modal" id="transit-modal" role="dialog" aria-modal="true" aria-label="編輯車程">
+<div class="modal-overlay transit-modal" id="transit-modal" role="dialog" aria-modal="true" aria-label="編輯移動方式">
   <div class="modal">
-    <h3>🚗 編輯車程</h3>
-    <label>車程時間（分鐘）</label>
+    <h3 id="transit-modal-title">🚗 編輯移動方式</h3>
+    <label>交通方式</label>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button id="transit-mode-drive" onclick="setTransitMode('drive')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--sky);background:var(--light);color:var(--ocean);font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-weight:600;">🚗 開車</button>
+      <button id="transit-mode-walk" onclick="setTransitMode('walk')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--mid);font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">🚶 步行</button>
+    </div>
+    <label id="transit-duration-label">車程時間（分鐘）</label>
     <input type="number" id="edit-drive" min="1" max="360" step="1" placeholder="分鐘">
     <p style="font-size:0.75rem;color:var(--mid);margin-top:8px;">修改後，後續景點的出發時間將自動重新計算</p>
     <div class="modal-actions">
@@ -1344,12 +1378,12 @@ body {
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
-
 <script id="main-script">
+
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:10","stay":0,"note":""},{"name":"🏨 鎖港郵局會館","depart":"18:50","stay":20,"note":""},{"name":"🍽 新村美食館","depart":"20:30","stay":90,"note":""},{"name":"🛍 市區中正路商圈","depart":"21:15","stay":45,"note":""},{"name":"🏨 鎖港郵局會館","depart":"21:35","stay":0,"note":"抵達・休息"}],"drives":[20,10,5,20]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🥐 文康街早餐","depart":"09:00","stay":0,"note":""},{"name":"🐠 澎湖水族館","depart":"10:40","stay":75,"note":""},{"name":"🌊 摩西分海","depart":"12:40","stay":90,"note":""},{"name":"🍜 西嶼午餐","depart":"14:30","stay":70,"note":""},{"name":"🗿 西嶼景點","depart":"16:15","stay":95,"note":"大菓葉・鯨魚洞"},{"name":"🏨 鎖港郵局會館","depart":"18:20","stay":90,"note":"梳洗"},{"name":"🎆 觀音亭花火節","depart":"21:40","stay":200,"note":""},{"name":"🏨 鎖港郵局會館","depart":"22:00","stay":0,"note":"抵達・休息"}],"drives":[25,30,40,10,35,10,20]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":""},{"name":"🏛 舊郵便局（澎湖水下文化遺產博物館）","depart":"11:20","stay":125,"note":""},{"name":"🛍 午餐與伴手禮","depart":"12:45","stay":85,"note":""},{"name":"✈️ 澎湖機場","depart":"13:25","stay":0,"note":"班機 15:30"}],"drives":[15,5,40]}]};
+const DEFAULT_DATA = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:10","stay":0,"note":"","coords":{"lat":23.561020574753133,"lng":119.62948594417897}},{"name":"🏨 鎖港郵局會館","depart":"18:50","stay":20,"note":"","coords":{"lat":23.525358046101026,"lng":119.59696644417897}},{"name":"🍽 新村美食館","depart":"20:30","stay":90,"note":"","coords":{"lat":23.57048805880574,"lng":119.56947418650736}},{"name":"🛍 市區中正路商圈","depart":"21:15","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614}},{"name":"🏨 鎖港郵局會館","depart":"21:35","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421}}],"drives":[20,10,5,20]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:00","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖水族館","depart":"10:40","stay":75,"note":"","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"09:25"},{"name":"摩西分海","depart":"12:40","stay":90,"note":"","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:10"},{"name":"池東大菓葉玄武岩","depart":"14:55","stay":95,"note":"大菓葉・鯨魚洞","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"13:20"},{"name":"🏨 鎖港郵局會館","depart":"17:00","stay":90,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"15:30"},{"name":"觀音亭親水遊憩區","depart":"20:30","stay":200,"note":"","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"17:10"}],"drives":[25,30,40,35,10,20]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖縣南海立體停車場","depart":"10:30","stay":60,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"🏛 舊郵便局（澎湖水下文化遺產博物館）","depart":"12:50","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476}},{"name":"✈️ 澎湖機場","depart":"12:55","stay":0,"note":"班機 15:30"}],"drives":[15,15,5]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -1549,14 +1583,19 @@ function renderStops(di) {
     if (!isLast) {
       const tr = document.createElement('div');
       tr.className = 'transit-row';
+      const mode = (day.modes && day.modes[si]) || 'drive';
+      const isWalk = mode === 'walk';
+      const modeIcon = isWalk ? '🚶' : '🚗';
+      const modeLabel = isWalk ? '步行' : '車程';
       tr.innerHTML = `
         <div class="transit-left">
           <div class="transit-line-top"></div>
-          <div class="transit-icon-wrap">🚗</div>
+          <div class="transit-icon-wrap${isWalk ? ' walk' : ''}">${modeIcon}</div>
           <div class="transit-line-bot"></div>
         </div>
         <div class="transit-info">
-          <span class="transit-dur" onclick="editDrive(${di},${si})" title="點擊編輯車程">約 ${day.drives[si]} 分鐘 ✏️</span>
+          <span class="transit-dur" onclick="editDrive(${di},${si})" title="點擊編輯${modeLabel}">約 ${day.drives[si]} 分鐘 ✏️</span>
+          <button class="transit-mode-toggle" onclick="quickToggleMode(${di},${si})" title="切換交通方式">${isWalk ? '🚗切換開車' : '🚶切換步行'}</button>
         </div>
       `;
       container.appendChild(tr);
@@ -1572,9 +1611,33 @@ function _stopToPlace(stopName) {
   if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
   return clean + ' 澎湖';
 }
-function _buildNavURL(di) {
+function _buildNavURL(di, forceMode) {
   const places = data.days[di].stops.map(s => _stopToPlace(s.name));
-  return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
+  // Determine predominant mode
+  const modes = data.days[di].modes || [];
+  const walkCount = modes.filter(m => m === 'walk').length;
+  const driveCount = (data.days[di].drives.length) - walkCount;
+  const travelmode = forceMode || (walkCount > driveCount ? 'walking' : 'driving');
+  return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}?travelmode=${travelmode}`;
+}
+
+// Build Google Maps URL for A→B segment query (with travel mode)
+function _buildSegGMapsURL(di, si) {
+  const day = data.days[di];
+  const stopA = day.stops[si];
+  const stopB = day.stops[si + 1];
+  const mode = (day.modes && day.modes[si]) || 'drive';
+  const travelmode = mode === 'walk' ? 'walking' : 'driving';
+
+  // Prefer coords for accuracy; fall back to name
+  function placeParam(stop) {
+    if (stop.coords) return `${stop.coords.lat},${stop.coords.lng}`;
+    return encodeURIComponent(_stopToPlace(stop.name));
+  }
+
+  const from = placeParam(stopA);
+  const to   = placeParam(stopB);
+  return `https://www.google.com/maps/dir/${from}/${to}/?travelmode=${travelmode}`;
 }
 
 function renderNavCard(di) {
@@ -1887,13 +1950,24 @@ function renderMapStopList() {
     if (!isLast) {
       const tr = document.createElement('div');
       tr.className = 'map-transit-row';
+      const mode = (day.modes && day.modes[si]) || 'drive';
+      const isWalk = mode === 'walk';
+      const modeIcon = isWalk ? '🚶' : '🚗';
+      const modeLabel = isWalk ? '步行' : '車程';
+      const segURL = _buildSegGMapsURL(currentMapDay, si);
       tr.innerHTML = `
-        <span class="map-transit-label">🚗</span>
+        <span class="map-transit-label">${modeIcon}</span>
         <input class="map-inline-drive" value="約 ${drives[si]} 分鐘" data-si="${si}"
-          title="點擊編輯車程時間"
+          title="從 Google Maps 查好時間後，點此輸入分鐘數"
           onfocus="this.value='${drives[si]}'; this.select();"
           onblur="mapInlineSaveDrive(${si}, this.value)"
           onkeydown="if(event.key==='Enter'){this.blur();}">
+        <button class="transit-mode-toggle" onclick="quickToggleMapSegMode(${si})" title="切換此段交通方式">
+          ${isWalk ? '🚗開車' : '🚶步行'}
+        </button>
+        <a class="map-gmaps-btn" href="${segURL}" target="_blank" title="在 Google Maps 查詢此段${modeLabel}時間，複製後貼回左側輸入框">
+          查 Google Maps ↗
+        </a>
         <span class="map-transit-label">→ 抵達 ${minutesToTime(timeToMinutes(stop.depart) + (drives[si]||0))}</span>
       `;
       listEl.appendChild(tr);
@@ -1971,7 +2045,23 @@ function mapInlineSaveDrive(si, val) {
   renderStops(di);
   renderNavCard(di);
   renderMapStopList();
-  showToast('🚗 車程已更新');
+  showToast('✅ 時間已更新');
+}
+
+// Toggle mode for a segment directly from map page transit row
+function quickToggleMapSegMode(si) {
+  const di = currentMapDay;
+  const day = data.days[di];
+  if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
+  while (day.modes.length < day.drives.length) day.modes.push('drive');
+  day.modes[si] = (day.modes[si] === 'walk') ? 'drive' : 'walk';
+  pushUndo();
+  autosave();
+  renderStops(di);
+  renderNavCard(di);
+  renderMapStopList();
+  const modeLabel = day.modes[si] === 'walk' ? '步行 🚶' : '開車 🚗';
+  showToast(`已切換為${modeLabel}，請點「查 Google Maps」取得時間`);
 }
 
 function mapInlineSaveCoords(si, val) {
@@ -2034,6 +2124,7 @@ function mapDeleteStop(si) {
   pushUndo();
   day.stops.splice(si, 1);
   if (si < day.drives.length) day.drives.splice(si, 1);
+  if (day.modes && si < day.modes.length) day.modes.splice(si, 1);
   recalcTimes(di);
   autosave();
   renderStops(di);
@@ -2050,6 +2141,8 @@ function mapAddStop() {
   pushUndo();
   day.stops.push({ name: '📍 新景點', depart: lastStop.depart, stay: 60, note: '' });
   day.drives.push(15);
+  if (!day.modes) day.modes = new Array(day.drives.length - 1).fill('drive');
+  day.modes.push('drive');
   recalcTimes(di);
   autosave();
   renderStops(di);
@@ -2207,20 +2300,81 @@ let driveTarget = null;
 function editDrive(di, si) {
   driveTarget = { di, si };
   document.getElementById('edit-drive').value = data.days[di].drives[si];
+  const mode = (data.days[di].modes && data.days[di].modes[si]) || 'drive';
+  _applyTransitModeUI(mode);
   document.getElementById('transit-modal').classList.add('open');
+}
+
+function setTransitMode(mode) {
+  _applyTransitModeUI(mode);
+}
+
+function _applyTransitModeUI(mode) {
+  const driveBtn = document.getElementById('transit-mode-drive');
+  const walkBtn = document.getElementById('transit-mode-walk');
+  const label = document.getElementById('transit-duration-label');
+  const title = document.getElementById('transit-modal-title');
+  if (mode === 'walk') {
+    driveBtn.style.borderColor = 'var(--border)';
+    driveBtn.style.background = 'white';
+    driveBtn.style.color = 'var(--mid)';
+    driveBtn.style.fontWeight = '400';
+    walkBtn.style.borderColor = 'var(--green)';
+    walkBtn.style.background = 'var(--green-bg)';
+    walkBtn.style.color = 'var(--green)';
+    walkBtn.style.fontWeight = '600';
+    label.textContent = '步行時間（分鐘）';
+    title.textContent = '🚶 編輯移動方式';
+    driveBtn.dataset.selected = '';
+    walkBtn.dataset.selected = 'true';
+  } else {
+    driveBtn.style.borderColor = 'var(--sky)';
+    driveBtn.style.background = 'var(--light)';
+    driveBtn.style.color = 'var(--ocean)';
+    driveBtn.style.fontWeight = '600';
+    walkBtn.style.borderColor = 'var(--border)';
+    walkBtn.style.background = 'white';
+    walkBtn.style.color = 'var(--mid)';
+    walkBtn.style.fontWeight = '400';
+    label.textContent = '車程時間（分鐘）';
+    title.textContent = '🚗 編輯移動方式';
+    driveBtn.dataset.selected = 'true';
+    walkBtn.dataset.selected = '';
+  }
+}
+
+function quickToggleMode(di, si) {
+  const day = data.days[di];
+  if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
+  while (day.modes.length < day.drives.length) day.modes.push('drive');
+  day.modes[si] = (day.modes[si] === 'walk') ? 'drive' : 'walk';
+  pushUndo();
+  autosave();
+  renderStops(di);
+  renderNavCard(di);
+  syncMapIfActive(di);
+  const modeLabel = day.modes[si] === 'walk' ? '步行 🚶' : '開車 🚗';
+  showToast(`已切換為${modeLabel}`);
 }
 function saveDrive() {
   const { di, si } = driveTarget;
   const val = parseInt(document.getElementById('edit-drive').value);
   if (val > 0) {
     data.days[di].drives[si] = val;
+    // Save mode
+    const day = data.days[di];
+    if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
+    while (day.modes.length < day.drives.length) day.modes.push('drive');
+    const walkBtn = document.getElementById('transit-mode-walk');
+    day.modes[si] = (walkBtn && walkBtn.dataset.selected === 'true') ? 'walk' : 'drive';
     recalcTimes(di);
     pushUndo();
     autosave();
     renderStops(di);
     renderNavCard(di);
     syncMapIfActive(di);
-    showToast('🚗 車程已更新，時間重新計算');
+    const modeLabel = day.modes[si] === 'walk' ? '步行時間' : '車程';
+    showToast(`🚗 ${modeLabel}已更新，時間重新計算`);
   }
   closeTransitModal();
 }
@@ -2238,6 +2392,8 @@ function addStop(di) {
   pushUndo();
   day.stops.push({ name: '🆕 新景點', depart: lastStop.depart, stay: 60, note: '' });
   day.drives.push(15);
+  if (!day.modes) day.modes = new Array(day.drives.length - 1).fill('drive');
+  day.modes.push('drive');
   recalcTimes(di);
   autosave();
   renderStops(di);
@@ -2250,6 +2406,7 @@ function deleteStop(di, si) {
   pushUndo();
   day.stops.splice(si, 1);
   if (si < day.drives.length) day.drives.splice(si, 1);
+  if (day.modes && si < day.modes.length) day.modes.splice(si, 1);
   recalcTimes(di);
   autosave();
   renderStops(di);
@@ -2288,7 +2445,8 @@ function addDay() {
       { name: '🏨 住宿出發', depart: '09:00', stay: 0, note: '' },
       { name: '📍 目的地', depart: '10:00', stay: 60, note: '' }
     ],
-    drives: [30]
+    drives: [30],
+    modes: ['drive']
   };
   pushUndo();
   data.days.push(newDay);
@@ -2591,10 +2749,15 @@ function exportHTML() {
 </div>
 
 <!-- Transit Edit Modal -->
-<div class="modal-overlay transit-modal" id="transit-modal" role="dialog" aria-modal="true" aria-label="編輯車程">
+<div class="modal-overlay transit-modal" id="transit-modal" role="dialog" aria-modal="true" aria-label="編輯移動方式">
   <div class="modal">
-    <h3>🚗 編輯車程</h3>
-    <label>車程時間（分鐘）</label>
+    <h3 id="transit-modal-title">🚗 編輯移動方式</h3>
+    <label>交通方式</label>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button id="transit-mode-drive" onclick="setTransitMode('drive')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--sky);background:var(--light);color:var(--ocean);font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-weight:600;">🚗 開車</button>
+      <button id="transit-mode-walk" onclick="setTransitMode('walk')" style="flex:1;padding:8px;border-radius:10px;border:2px solid var(--border);background:white;color:var(--mid);font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">🚶 步行</button>
+    </div>
+    <label id="transit-duration-label">車程時間（分鐘）</label>
     <input type="number" id="edit-drive" min="1" max="360" step="1" placeholder="分鐘">
     <p style="font-size:0.75rem;color:var(--mid);margin-top:8px;">修改後，後續景點的出發時間將自動重新計算</p>
     <div class="modal-actions">
@@ -2756,7 +2919,9 @@ function buildCaptureHTML(di) {
       </div>
     `;
     if (!isLast) {
-      stopsHTML += `<div class="cap-transit"><span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span></div>`;
+      const transitMode1 = (day.modes && day.modes[si]) || 'drive';
+      const transitIcon1 = transitMode1 === 'walk' ? '🚶' : '🚗';
+      stopsHTML += `<div class="cap-transit"><span class="cap-transit-text">${transitIcon1} 約 ${day.drives[si]} 分鐘</span></div>`;
     }
   });
 
@@ -2909,7 +3074,7 @@ function buildPrintHTML(mapImgsByDay) {
             <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
           </div>
         </div>
-        ${!isLast ? `<div class="cap-transit"><span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span></div>` : ''}
+        ${!isLast ? `<div class="cap-transit"><span class="cap-transit-text">${(day.modes && day.modes[si]) === 'walk' ? '🚶' : '🚗'} 約 ${day.drives[si]} 分鐘</span></div>` : ''}
       `;
     });
     const mapImg = mapImgsByDay[di]
@@ -3007,6 +3172,7 @@ document.addEventListener('keydown', function(e) {
 // INIT
 // ═══════════════════════════════════════════
 renderAll();
+
 </script>
 </body>
 </html>
