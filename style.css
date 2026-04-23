@@ -576,12 +576,7 @@ body {
   box-shadow: 0 4px 24px rgba(26,107,138,0.15);
   margin-bottom: 20px;
   background: var(--light);
-}
-.map-container iframe {
-  width: 100%;
-  height: 380px;
-  border: none;
-  display: block;
+  display: none; /* iframe 已移除，保留 class 以防萬一 */
 }
 .map-stop-list {
   background: white;
@@ -831,88 +826,126 @@ body {
   width: 0%;
 }
 
-/* ── INLINE DAY MAP ── */
-.day-inline-map {
-  display: none;
+/* ── NAV CARD — Day 卡片底部導航按鈕 ── */
+.day-nav-card {
   border-top: 1px solid var(--border);
-  overflow: hidden;
-  background: var(--light);
+  background: linear-gradient(135deg, #f0f8fc 0%, #e8f4f8 100%);
+  padding: 14px 16px;
+  border-radius: 0 0 20px 20px;
 }
-.day-inline-map.open {
-  display: block;
-  animation: mapFadeIn 0.28s ease;
+.nav-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-@keyframes mapFadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.day-map-iframe-wrap {
-  width: 100%;
-  height: 320px;
-  position: relative;
-  background: var(--light);
-}
-.day-map-iframe-wrap iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
-  display: block;
-}
-.day-map-footer {
+.nav-card-route {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 14px;
-  background: white;
-  border-top: 1px solid var(--border);
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 4px;
+  padding: 2px 0;
 }
-.day-map-stops-preview {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  flex: 1;
-  min-width: 0;
-}
-.day-map-stop-chip {
-  display: flex;
+.nav-card-chip {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.69rem;
-  color: var(--mid);
-  background: var(--light);
+  font-size: 0.7rem;
+  color: var(--dark);
+  background: white;
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 2px 8px;
+  padding: 3px 9px 3px 4px;
   white-space: nowrap;
+  font-weight: 500;
 }
-.day-map-stop-chip-num {
-  width: 15px; height: 15px;
+.nav-card-chip-num {
+  width: 16px; height: 16px;
   border-radius: 50%;
   background: var(--ocean);
   color: white;
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 700;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.day-map-gmaps-btn {
+.nav-card-arrow {
+  font-size: 0.75rem;
+  color: var(--sky);
+  font-weight: 600;
+  margin: 0 1px;
+}
+.nav-card-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   background: var(--ocean);
   color: white;
-  border: none;
-  padding: 6px 13px;
-  border-radius: 10px;
-  font-size: 0.75rem;
+  text-decoration: none;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
   font-weight: 600;
   font-family: 'Noto Sans TC', sans-serif;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  white-space: nowrap;
-  transition: background 0.2s;
-  flex-shrink: 0;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.03em;
 }
-.day-map-gmaps-btn:hover { background: #155a76; }
+.nav-card-btn:hover {
+  background: #155a76;
+  transform: translateY(-1px);
+}
+.nav-card-btn:active { transform: translateY(0); }
+.nav-card-btn-icon { font-size: 1rem; }
+.nav-card-btn-arrow {
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin-left: auto;
+}
+
+/* ── MAP PAGE HERO ── */
+.map-nav-hero {
+  background: linear-gradient(135deg, var(--ocean) 0%, var(--sky) 100%);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.map-nav-hero-label {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.map-nav-hero-count {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+.map-nav-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  color: var(--ocean);
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: opacity 0.2s, transform 0.15s;
+  letter-spacing: 0.03em;
+  margin-top: 4px;
+}
+.map-nav-hero-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.map-nav-hero-btn span:last-child { margin-left: auto; font-size: 1rem; }
+.map-drive-row {
+  padding: 2px 0 2px 32px;
+}
+.map-stop-time {
+  font-size: 0.75rem;
+  color: var(--mid);
+  white-space: nowrap;
+}

@@ -88,22 +88,16 @@ function renderItinerary() {
         <span class="day-badge" onclick="editDay(${di})" title="點擊編輯天數資訊">🗓 ${day.label} <span style="font-size:0.65rem;opacity:0.7">✏️</span></span>
         <span class="day-theme-tag" onclick="editDay(${di})">${day.theme}</span>
         <div class="day-header-actions">
-          <button class="day-map-btn" id="mapbtn-${di}" onclick="toggleInlineMap(${di})">🗺 導航</button>
           <button class="day-delete-btn" onclick="deleteDay(${di})" title="刪除此天">✕</button>
         </div>
       </div>
       <div class="stops" id="stops-${di}"></div>
       <button class="add-stop-btn" onclick="addStop(${di})">＋ 新增景點</button>
-      <div class="day-inline-map" id="inline-map-${di}">
-        <div class="day-map-iframe-wrap" id="map-iframe-wrap-${di}"></div>
-        <div class="day-map-footer">
-          <div class="day-map-stops-preview" id="map-chips-${di}"></div>
-          <a class="day-map-gmaps-btn" id="gmaps-btn-${di}" href="#" target="_blank">🗺 在 Google Maps 開啟</a>
-        </div>
-      </div>
+      <div class="day-nav-card" id="nav-card-${di}"></div>
     `;
     container.appendChild(card);
     renderStops(di);
+    renderNavCard(di);
   });
 }
 
@@ -167,24 +161,53 @@ function renderStops(di) {
 }
 
 // ═══════════════════════════════════════════
-// MAP — 獨立地圖頁（切換時讀取最新 data）
+// NAV URL helpers
+// ═══════════════════════════════════════════
+function _stopToPlace(stopName) {
+  const clean = stopName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+  if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
+  return clean + ' 澎湖';
+}
+
+function _buildNavURL(di) {
+  const places = data.days[di].stops.map(s => _stopToPlace(s.name));
+  return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
+}
+
+// ═══════════════════════════════════════════
+// NAV CARD — Day 卡片底部導航區塊
+// ═══════════════════════════════════════════
+function renderNavCard(di) {
+  const day    = data.days[di];
+  const stops  = day.stops;
+  const navURL = _buildNavURL(di);
+
+  // 景點路線預覽（只取名字，去掉 emoji）
+  const cleanName = name => name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+  const routeChips = stops.map((s, i) => {
+    const n = cleanName(s.name);
+    const label = n.length > 8 ? n.slice(0, 8) + '…' : n;
+    return `<span class="nav-card-chip"><span class="nav-card-chip-num">${i + 1}</span>${label}</span>${i < stops.length - 1 ? '<span class="nav-card-arrow">›</span>' : ''}`;
+  }).join('');
+
+  document.getElementById(`nav-card-${di}`).innerHTML = `
+    <div class="nav-card-inner">
+      <div class="nav-card-route">${routeChips}</div>
+      <a class="nav-card-btn" href="${navURL}" target="_blank">
+        <span class="nav-card-btn-icon">🗺</span>
+        <span>開啟 Google Maps 導航</span>
+        <span class="nav-card-btn-arrow">↗</span>
+      </a>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// MAP PAGE — 地圖頁（切換時讀取最新 data）
 // ═══════════════════════════════════════════
 let currentMapDay = 0;
 
-function buildMapURL(dayIdx) {
-  const stops  = data.days[dayIdx].stops;
-  const places = stops.map(s => _stopToPlace(s.name));
-  if (places.length < 2) return '';
-  const origin      = encodeURIComponent(places[0]);
-  const destination = encodeURIComponent(places[places.length - 1]);
-  const waypoints   = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
-  let url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=${origin}&destination=${destination}&mode=driving&language=zh-TW`;
-  if (waypoints) url += `&waypoints=${waypoints}`;
-  return url;
-}
-
 function renderMap() {
-  // 確保 currentMapDay 不超出範圍（天數可能被刪除）
   if (currentMapDay >= data.days.length) currentMapDay = 0;
 
   const tabsEl = document.getElementById('map-tabs');
@@ -197,104 +220,40 @@ function renderMap() {
     tabsEl.appendChild(btn);
   });
 
-  const day   = data.days[currentMapDay];
-  const stops = day.stops;
+  const day    = data.days[currentMapDay];
+  const stops  = day.stops;
   const drives = day.drives;
-  const mapURL = buildMapURL(currentMapDay);
+  const navURL = _buildNavURL(currentMapDay);
 
-  let listHTML = stops.map((s, i) => {
-    const driveAfter = i < drives.length ? `<span class="map-drive-time">↓ 約 ${drives[i]} 分</span>` : '';
+  const listHTML = stops.map((s, i) => {
+    const driveAfter = i < drives.length
+      ? `<div class="map-drive-row"><span class="map-drive-time">↓ 約 ${drives[i]} 分鐘</span></div>`
+      : '';
     return `
       <div class="map-stop-item">
         <div class="map-num">${i + 1}</div>
         <div class="map-stop-name">${s.name}</div>
-        <div style="font-size:0.75rem;color:var(--mid)">${s.depart}</div>
+        <div class="map-stop-time">${s.depart}</div>
       </div>
-      ${driveAfter ? `<div style="padding:0 0 0 32px;font-size:0.72rem;color:var(--sky);margin-bottom:2px">${driveAfter}</div>` : ''}
+      ${driveAfter}
     `;
   }).join('');
 
-  const places = stops.map(s => _stopToPlace(s.name));
-  const navURL = `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
-
   document.getElementById('map-content').innerHTML = `
-    <div class="map-container">
-      <iframe src="${mapURL}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="map-nav-hero">
+      <div class="map-nav-hero-label">🗓 ${day.label} · ${day.theme}</div>
+      <div class="map-nav-hero-count">${stops.length} 個景點</div>
+      <a class="map-nav-hero-btn" href="${navURL}" target="_blank">
+        <span>🗺</span>
+        <span>在 Google Maps 開啟完整導航</span>
+        <span>↗</span>
+      </a>
     </div>
     <div class="map-stop-list">
       <h4>📍 Day ${currentMapDay + 1} 路線景點</h4>
       ${listHTML}
-      <a href="${navURL}" target="_blank" class="map-open-btn">🗺 在 Google Maps 開啟導航</a>
     </div>
   `;
-}
-
-// ═══════════════════════════════════════════
-// INLINE MAP — Day 卡片內展開
-// ═══════════════════════════════════════════
-const _mapOpen = {};
-
-function _stopToPlace(stopName) {
-  const clean = stopName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
-  if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
-  return clean + ' 澎湖';
-}
-
-function _buildInlineMapURL(di) {
-  const day    = data.days[di];
-  const places = day.stops.map(s => _stopToPlace(s.name));
-
-  if (places.length < 2) return '';
-  const origin      = encodeURIComponent(places[0]);
-  const destination = encodeURIComponent(places[places.length - 1]);
-  const waypoints   = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
-  let url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=${origin}&destination=${destination}&mode=driving&language=zh-TW`;
-  if (waypoints) url += `&waypoints=${waypoints}`;
-  return url;
-}
-
-function _buildNavURL(di) {
-  const places = data.days[di].stops.map(s => _stopToPlace(s.name));
-  return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
-}
-
-function _renderInlineMap(di) {
-  const day      = data.days[di];
-  const mapURL   = _buildInlineMapURL(di);
-  const navURL   = _buildNavURL(di);
-
-  document.getElementById(`map-iframe-wrap-${di}`).innerHTML =
-    mapURL
-      ? `<iframe src="${mapURL}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
-      : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:0.82rem;color:var(--mid)">景點不足，無法顯示地圖</div>`;
-
-  document.getElementById(`map-chips-${di}`).innerHTML = day.stops.map((s, i) => {
-    const name = s.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
-    const label = name.length > 7 ? name.slice(0, 7) + '…' : name;
-    return `<span class="day-map-stop-chip">
-      <span class="day-map-stop-chip-num">${i + 1}</span>${label}
-    </span>`;
-  }).join('');
-
-  document.getElementById(`gmaps-btn-${di}`).href = navURL;
-}
-
-function toggleInlineMap(di) {
-  const panel = document.getElementById(`inline-map-${di}`);
-  const btn   = document.getElementById(`mapbtn-${di}`);
-  const isOpen = _mapOpen[di];
-
-  if (isOpen) {
-    panel.classList.remove('open');
-    btn.textContent = '🗺 導航';
-    _mapOpen[di] = false;
-  } else {
-    _renderInlineMap(di);
-    panel.classList.add('open');
-    btn.textContent = '✕ 收起';
-    _mapOpen[di] = true;
-    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
-  }
 }
 
 function openDayMap(di) {
