@@ -1227,6 +1227,193 @@ body {
   width: 0%;
 }
 
+/* ══════════════════════════════════════════
+   MOBILE RESPONSIVE STYLES
+   ══════════════════════════════════════════ */
+
+/* ── 手機觸控：常態顯示 hover-only 元素 ── */
+@media (hover: none) and (pointer: coarse) {
+  .stop-name .edit-icon { opacity: 0.6; }
+  .stop-gmaps-btn { opacity: 1; }
+  .stop-delete { opacity: 0.55; }
+  .stop-move-wrap { opacity: 1; }
+  .map-stop-actions { opacity: 1; }
+}
+
+/* ── 小螢幕 (≤ 480px) ── */
+@media (max-width: 480px) {
+
+  /* NAV */
+  .nav {
+    padding: 0 10px;
+    height: auto;
+    min-height: 56px;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 8px 10px;
+  }
+  .nav-title {
+    font-size: 0.88rem;
+    width: 100%;
+    margin-right: 0;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+    margin-bottom: 2px;
+  }
+  .nav-title-edit-icon { display: none; }
+  .nav-btn {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    flex: 1;
+    text-align: center;
+  }
+  .export-wrap {
+    flex: 1;
+    margin-left: 0;
+  }
+  .nav-export {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+  .export-menu {
+    right: 8px;
+    left: 8px;
+    top: auto;
+    /* anchor below nav dynamically via JS — fallback: */
+  }
+
+  /* PAGE */
+  .page { padding: 16px 12px 80px; }
+
+  /* HEADER */
+  .header { margin-bottom: 18px; }
+  .header h1 { font-size: 1.4rem; }
+  .header .subtitle { font-size: 0.78rem; }
+  .edit-hint { font-size: 0.68rem; padding: 4px 10px; }
+
+  /* DAY CARD */
+  .day-card { margin-bottom: 16px; border-radius: 16px; }
+  .day-header { padding: 12px 12px 10px; gap: 6px; }
+  .day-badge { font-size: 0.88rem; }
+  .day-theme-tag { font-size: 0.7rem; padding: 2px 7px; }
+  .day-map-btn { padding: 3px 8px; font-size: 0.68rem; }
+  .day-delete-btn { width: 24px; height: 24px; font-size: 0.7rem; }
+
+  /* STOPS */
+  .stop-row { padding: 0 10px; }
+  .stop-left { width: 26px; margin-right: 10px; }
+  .stop-num { width: 24px; height: 24px; font-size: 0.68rem; }
+  .stop-name { font-size: 0.88rem; }
+  .stop-content { padding: 8px 6px 6px 0; }
+  .tag { font-size: 0.65rem; padding: 2px 6px; }
+
+  /* 手機上 stop 操作按鈕改為較大觸控區 */
+  .stop-delete {
+    opacity: 0.45;
+    font-size: 1.1rem;
+    padding: 2px 6px;
+  }
+  .stop-move-btn { width: 26px; height: 26px; font-size: 0.72rem; }
+
+  /* Add stop btn */
+  .add-stop-btn { margin-left: 46px; font-size: 0.75rem; padding: 5px 12px; }
+
+  /* Transit */
+  .transit-row { padding: 0 10px; }
+  .transit-left { width: 26px; margin-right: 10px; }
+  .transit-info { font-size: 0.7rem; gap: 6px; flex-wrap: wrap; }
+  .transit-dur { font-size: 0.67rem; }
+  .transit-nav-btn { font-size: 0.62rem; padding: 2px 6px; }
+
+  /* Add Day */
+  .add-day-btn { font-size: 0.8rem; padding: 12px; border-radius: 16px; }
+
+  /* MAP PAGE */
+  .map-sticky-top { padding: 12px 12px 0; }
+  .map-page-header h2 { font-size: 1.15rem; }
+  .map-page-header p { font-size: 0.73rem; }
+  .map-day-tabs { gap: 5px; }
+  .map-day-tab { padding: 6px 12px; font-size: 0.76rem; }
+  #leaflet-map { height: clamp(180px, 30vh, 280px); }
+  .map-scroll-body { padding: 10px 12px 80px; }
+
+  /* MAP STOP LIST */
+  .map-stop-list { padding: 12px; }
+  .map-inline-name { font-size: 0.82rem; }
+  .map-inline-time { width: 70px; font-size: 0.7rem; }
+  .map-stop-times { gap: 1px; }
+  .map-stop-row { padding: 6px 4px; gap: 6px; }
+
+  /* Nav card */
+  .day-nav-card { padding: 12px 12px; }
+  .nav-card-btn { font-size: 0.8rem; padding: 10px 12px; }
+  .nav-card-chip { font-size: 0.65rem; }
+
+  /* MODAL */
+  .modal { padding: 18px 16px; border-radius: 16px; }
+  .modal h3 { font-size: 0.95rem; }
+  .modal input, .modal select, .modal textarea { font-size: 0.83rem; padding: 7px 10px; }
+  .modal-overlay { padding: 12px; }
+  .btn-save, .btn-cancel, .btn-danger { font-size: 0.8rem; padding: 8px; }
+
+  /* TOAST */
+  .toast { font-size: 0.78rem; padding: 9px 16px; bottom: 16px; max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
+
+  /* Google Maps buttons — always visible on mobile */
+  .stop-gmaps-btn {
+    opacity: 1;
+    font-size: 0.62rem;
+    padding: 2px 5px;
+  }
+
+  /* MAP NAV BOTTOM */
+  .map-nav-bottom { gap: 8px; padding: 12px; }
+  .map-nav-hero-btn { font-size: 0.8rem; padding: 10px 12px; min-width: 0; }
+}
+
+/* ── 中等手機 (481–640px) ── */
+@media (min-width: 481px) and (max-width: 640px) {
+  .nav-title { font-size: 0.92rem; }
+  .nav-btn { padding: 6px 11px; font-size: 0.77rem; }
+  .header h1 { font-size: 1.55rem; }
+  .day-badge { font-size: 0.9rem; }
+  .stop-name { font-size: 0.9rem; }
+  .map-day-tab { padding: 7px 14px; font-size: 0.78rem; }
+  .stop-delete { opacity: 0.5; }
+  .stop-gmaps-btn { opacity: 1; }
+  .map-stop-actions { opacity: 1; }
+}
+
+/* ── 匯出選單在手機上的修正 ── */
+@media (max-width: 600px) {
+  .export-menu {
+    position: fixed;
+    left: 8px !important;
+    right: 8px !important;
+    top: auto;
+    min-width: unset;
+  }
+  .export-menu-item { font-size: 0.8rem; padding: 10px 12px; }
+}
+
+/* ── 確保地圖 tabs 在手機可橫向捲動 ── */
+@media (max-width: 480px) {
+  .map-day-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .map-day-tabs::-webkit-scrollbar { display: none; }
+  .map-day-tab { flex-shrink: 0; }
+}
+
+/* ══════════════════════════════════════════ */
+
 /* ── NAV CARD — Day 卡片底部導航按鈕 ── */
 .day-nav-card {
   border-top: 1px solid var(--border);
@@ -1316,6 +1503,7 @@ body {
   </span>
   <button class="nav-btn active" onclick="showPage('itinerary')" aria-label="行程頁">📋 行程</button>
   <button class="nav-btn" onclick="showPage('map')" aria-label="地圖頁">🗺 地圖</button>
+  <button class="nav-btn" onclick="undo()" aria-label="復原上一步" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   <div class="export-wrap">
     <button class="nav-export" onclick="toggleExportMenu()" aria-haspopup="true" aria-expanded="false" id="export-trigger">⬇ 匯出 ▾</button>
     <div class="export-menu" id="export-menu">
@@ -1365,7 +1553,6 @@ body {
   <div id="days-container"></div>
   <div style="display:flex;gap:8px;padding:0 16px 16px;">
     <button class="add-day-btn" onclick="addDay()" aria-label="新增天數">＋ 新增天數</button>
-    <button class="add-day-btn" onclick="undo()" aria-label="復原上一步" style="background:var(--mid);color:white;flex:0 0 auto;" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   </div>
 </div>
 
@@ -2327,6 +2514,9 @@ function showPage(name) {
     btns[0].classList.add('active');
   } else if (name === 'map') {
     btns[1].classList.add('active');
+    // 動態計算 nav 高度（手機換行時 nav 較高）
+    const navH = document.querySelector('.nav').offsetHeight;
+    document.getElementById('page-map').style.height = `calc(100vh - ${navH}px)`;
     renderMap();
     // Leaflet 需要在 visible 後才能正確計算大小
     setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 100);
@@ -2695,6 +2885,12 @@ function closeSubtitleModal() {
 function toggleExportMenu() {
   const menu = document.getElementById('export-menu');
   const trigger = document.getElementById('export-trigger');
+  const nav = document.querySelector('.nav');
+  // 動態計算 nav 高度，讓選單正確貼齊（手機上 nav 可能換行變高）
+  if (nav) {
+    const navBottom = nav.getBoundingClientRect().bottom;
+    menu.style.top = navBottom + 'px';
+  }
   const isOpen = menu.classList.toggle('open');
   if (trigger) trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
 }
@@ -2820,16 +3016,36 @@ function exportJSON() {
 // ═══════════════════════════════════════════
 // JSON VALIDATION
 // ═══════════════════════════════════════════
-function validateData(d) {
-  if (!d || typeof d.title !== 'string' || !Array.isArray(d.days)) return false;
-  return d.days.every(day =>
-    Array.isArray(day.stops) && day.stops.length >= 2 &&
-    Array.isArray(day.drives) &&
-    day.drives.length === day.stops.length - 1 &&
-    day.stops.every(s => typeof s.depart === 'string') &&
-    typeof day.label === 'string' &&
-    typeof day.theme === 'string'
-  );
+// 自動修復 drives/modes 陣列長度，回傳錯誤訊息（null = 正常）
+function sanitizeData(d) {
+  if (!d || typeof d.title !== 'string' || !Array.isArray(d.days)) {
+    return '缺少必要欄位（title 或 days）';
+  }
+  for (let di = 0; di < d.days.length; di++) {
+    const day = d.days[di];
+    const label = day.label || `Day ${di + 1}`;
+    if (!Array.isArray(day.stops) || day.stops.length < 2) {
+      return `${label}：景點數量不足（至少需要 2 個）`;
+    }
+    if (!Array.isArray(day.drives)) {
+      return `${label}：缺少 drives 欄位`;
+    }
+    if (!day.stops.every(s => typeof s.depart === 'string')) {
+      return `${label}：有景點缺少出發時間（depart）`;
+    }
+    const expected = day.stops.length - 1;
+    // 自動修正 drives 長度（多的截掉、少的補15）
+    if (day.drives.length !== expected) {
+      console.warn(`自動修正 ${label} drives: ${day.drives.length} → ${expected}`);
+      while (day.drives.length < expected) day.drives.push(15);
+      day.drives = day.drives.slice(0, expected);
+    }
+    // 自動修正 modes 長度
+    if (!day.modes) day.modes = new Array(expected).fill('drive');
+    while (day.modes.length < expected) day.modes.push('drive');
+    day.modes = day.modes.slice(0, expected);
+  }
+  return null; // 無錯誤
 }
 
 function importJSON() {
@@ -2844,16 +3060,18 @@ function importJSON() {
     reader.onload = function(ev) {
       try {
         const parsed = JSON.parse(ev.target.result);
-        if (!validateData(parsed)) {
-          showToast('⚠️ JSON 格式不正確或缺少必要欄位');
+        const errMsg = sanitizeData(parsed);
+        if (errMsg) {
+          showToast(`⚠️ 匯入失敗：${errMsg}`);
           return;
         }
         data = parsed;
         storageSet(STORAGE_KEY, JSON.stringify(data));
+        Object.keys(geocodeCache).forEach(k => delete geocodeCache[k]);
         renderAll();
         showToast(`✅ 已匯入「${data.title}」，共 ${data.days.length} 天行程！`);
       } catch(err) {
-        showToast('⚠️ 讀取 JSON 失敗');
+        showToast('⚠️ 讀取 JSON 失敗，請確認檔案內容正確');
         console.error('JSON 匯入失敗', err);
       }
     };
@@ -2910,6 +3128,7 @@ function exportHTML() {
   </span>
   <button class="nav-btn active" onclick="showPage('itinerary')" aria-label="行程頁">📋 行程</button>
   <button class="nav-btn" onclick="showPage('map')" aria-label="地圖頁">🗺 地圖</button>
+  <button class="nav-btn" onclick="undo()" aria-label="復原上一步" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   <div class="export-wrap">
     <button class="nav-export" onclick="toggleExportMenu()" aria-haspopup="true" aria-expanded="false" id="export-trigger">⬇ 匯出 ▾</button>
     <div class="export-menu" id="export-menu">
@@ -2959,7 +3178,6 @@ function exportHTML() {
   <div id="days-container"></div>
   <div style="display:flex;gap:8px;padding:0 16px 16px;">
     <button class="add-day-btn" onclick="addDay()" aria-label="新增天數">＋ 新增天數</button>
-    <button class="add-day-btn" onclick="undo()" aria-label="復原上一步" style="background:var(--mid);color:white;flex:0 0 auto;" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   </div>
 </div>
 
