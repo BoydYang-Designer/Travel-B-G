@@ -156,6 +156,27 @@ body {
 .page { display: none; padding: 24px 16px 80px; max-width: 720px; margin: 0 auto; }
 .page.active { display: block; }
 
+/* ── MAP TOGGLE BUTTON ── */
+.map-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--ocean);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin: 0 auto 10px;
+  display: flex;
+}
+.map-toggle-btn:hover { background: #155a76; }
+.map-collapsed #leaflet-map { display: none !important; }
+
 /* ── MAP PAGE STICKY LAYOUT ── */
 #page-map.active {
   display: flex;
@@ -450,8 +471,72 @@ body {
 .tag-stay    { background: var(--green-bg); color: var(--green); }
 .tag-note    { background: var(--red-bg);   color: var(--red);   }
 
-/* Move stop buttons */
-.stop-move-wrap {
+/* Stop Google Maps button in itinerary */
+.stop-gmaps-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #e8f4fe;
+  border: 1.5px solid #90c4e8;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  color: #1a6b8a;
+  padding: 2px 7px;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+.stop-row:hover .stop-gmaps-btn { opacity: 1; }
+.stop-gmaps-btn:hover { background: #1a73e8; border-color: #1a73e8; color: white; }
+
+/* Transit navigation button in itinerary */
+.transit-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fff8e6;
+  border: 1.5px solid #f0c040;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  color: #7a5200;
+  padding: 2px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 500;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.transit-nav-btn:hover { background: #ffd700; border-color: #d4a800; color: #5a3c00; }
+
+/* PDF Modal */
+.pdf-option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0 4px;
+}
+.pdf-option-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.pdf-option-item:hover { border-color: var(--sky); background: var(--light); }
+.pdf-option-item.selected { border-color: var(--ocean); background: #eaf4f8; }
+.pdf-option-icon { font-size: 1.5rem; }
+.pdf-option-label { font-size: 0.88rem; font-weight: 600; color: var(--dark); }
+.pdf-option-desc { font-size: 0.73rem; color: var(--mid); margin-top: 2px; }
+
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1256,9 +1341,9 @@ body {
         <span class="em-icon">🖼️</span>
         <div><div>匯出圖片</div><div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div></div>
       </button>
-      <button class="export-menu-item" onclick="exportPDF()">
+      <button class="export-menu-item" onclick="openPdfModal()">
         <span class="em-icon">📄</span>
-        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div></div>
+        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份（可選含/不含地圖）</div></div>
       </button>
       <div class="export-menu-sep"></div>
       <button class="export-menu-item" onclick="resetToDefault()">
@@ -1287,18 +1372,47 @@ body {
 <!-- MAP PAGE -->
 <div id="page-map" class="page">
   <!-- 固定區塊：標題 + 分頁 + 地圖 -->
-  <div class="map-sticky-top">
+  <div class="map-sticky-top" id="map-sticky-top">
     <div class="map-page-header">
       <h2>🗺 互動地圖</h2>
       <p>點擊景點可編輯，拖曳地圖縮放</p>
     </div>
     <div class="map-day-tabs" id="map-tabs"></div>
+    <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
     <div id="leaflet-map"></div>
   </div>
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
   <div class="map-scroll-body">
     <div class="map-stop-list" id="map-stop-list"></div>
     <div id="map-nav-btn-wrap"></div>
+  </div>
+</div>
+
+<!-- PDF Export Modal -->
+<div class="modal-overlay" id="pdf-modal" role="dialog" aria-modal="true" aria-label="匯出 PDF">
+  <div class="modal">
+    <h3>📄 匯出 PDF</h3>
+    <p style="font-size:0.8rem;color:var(--mid);margin-bottom:4px;">請選擇要包含的內容：</p>
+    <div class="pdf-option-group">
+      <div class="pdf-option-item selected" id="pdf-opt-with-map" onclick="selectPdfOption('with-map')">
+        <span class="pdf-option-icon">🗺</span>
+        <div>
+          <div class="pdf-option-label">含地圖</div>
+          <div class="pdf-option-desc">每天行程附上路線地圖截圖（較慢）</div>
+        </div>
+      </div>
+      <div class="pdf-option-item" id="pdf-opt-no-map" onclick="selectPdfOption('no-map')">
+        <span class="pdf-option-icon">📋</span>
+        <div>
+          <div class="pdf-option-label">不含地圖</div>
+          <div class="pdf-option-desc">僅行程文字，速度較快</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="closePdfModal()">取消</button>
+      <button class="btn-save" onclick="confirmExportPDF()">開始匯出</button>
+    </div>
   </div>
 </div>
 
@@ -1609,6 +1723,7 @@ function renderStops(di) {
         <div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
         <div class="stop-meta">${arriveTag}${leaveTag}${stayTag}${noteTag}</div>
       </div>
+      <a class="stop-gmaps-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍 Maps</a>
       <div class="stop-move-wrap">
         <button class="stop-move-btn" onclick="moveStop(${di},${si},-1)" title="上移" ${si === 0 ? 'disabled' : ''}>▲</button>
         <button class="stop-move-btn" onclick="moveStop(${di},${si},1)" title="下移" ${isLast ? 'disabled' : ''}>▼</button>
@@ -1633,6 +1748,7 @@ function renderStops(di) {
         <div class="transit-info">
           <span class="transit-dur" onclick="editDrive(${di},${si})" title="點擊編輯${modeLabel}">約 ${day.drives[si]} 分鐘 ✏️</span>
           <button class="transit-mode-toggle" onclick="quickToggleMode(${di},${si})" title="切換交通方式">${isWalk ? '🚗切換開車' : '🚶切換步行'}</button>
+          <a class="transit-nav-btn" href="${_buildSegGMapsURL(di, si)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>
         </div>
       `;
       container.appendChild(tr);
@@ -1647,6 +1763,12 @@ function _stopToPlace(stopName) {
   const clean = stopName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
   if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
   return clean + ' 澎湖';
+}
+function _buildStopGMapsURL(stop) {
+  if (stop.coords) {
+    return `https://www.google.com/maps/search/?api=1&query=${stop.coords.lat},${stop.coords.lng}`;
+  }
+  return `https://www.google.com/maps/search/${encodeURIComponent(_stopToPlace(stop.name))}`;
 }
 function _buildNavURL(di, forceMode) {
   const places = data.days[di].stops.map(s => _stopToPlace(s.name));
@@ -2584,18 +2706,115 @@ document.addEventListener('click', function(e) {
 });
 
 // ═══════════════════════════════════════════
+// MAP COLLAPSE TOGGLE
+// ═══════════════════════════════════════════
+let mapCollapsed = false;
+function toggleMapCollapse() {
+  mapCollapsed = !mapCollapsed;
+  const stickyTop = document.getElementById('map-sticky-top');
+  const btn = document.getElementById('map-toggle-btn');
+  if (mapCollapsed) {
+    stickyTop.classList.add('map-collapsed');
+    btn.textContent = '🗺 展開地圖 ▼';
+    // Expand scroll body to use freed space
+    document.querySelector('.map-scroll-body').style.flex = '1';
+  } else {
+    stickyTop.classList.remove('map-collapsed');
+    btn.textContent = '🗺 收合地圖 ▲';
+    document.querySelector('.map-scroll-body').style.flex = '';
+    setTimeout(() => { if (leafletMap) leafletMap.invalidateSize(); }, 150);
+  }
+}
+
+// ═══════════════════════════════════════════
+// PDF MODAL
+// ═══════════════════════════════════════════
+let pdfIncludeMap = true;
+function openPdfModal() {
+  document.getElementById('export-menu').classList.remove('open');
+  pdfIncludeMap = true;
+  selectPdfOption('with-map');
+  document.getElementById('pdf-modal').classList.add('open');
+}
+function closePdfModal() {
+  document.getElementById('pdf-modal').classList.remove('open');
+}
+function selectPdfOption(opt) {
+  pdfIncludeMap = (opt === 'with-map');
+  document.getElementById('pdf-opt-with-map').classList.toggle('selected', pdfIncludeMap);
+  document.getElementById('pdf-opt-no-map').classList.toggle('selected', !pdfIncludeMap);
+}
+async function confirmExportPDF() {
+  closePdfModal();
+  if (pdfIncludeMap) {
+    await exportPDF();
+  } else {
+    await exportPDFNoMap();
+  }
+}
+async function exportPDFNoMap() {
+  showProgress('正在準備列印…', 60);
+  await new Promise(r => setTimeout(r, 200));
+  hideProgress();
+  const printHTML = buildPrintHTML({});
+  const printWin = window.open('', '_blank', 'width=800,height=900');
+  if (!printWin) { showToast('⚠️ 請允許彈出視窗'); return; }
+  printWin.document.write(printHTML);
+  printWin.document.close();
+  printWin.onload = () => { setTimeout(() => { printWin.focus(); printWin.print(); }, 400); };
+  showToast('📄 列印視窗已開啟，選擇「儲存為 PDF」');
+}
+
+// ═══════════════════════════════════════════
 // JSON 匯出 / 匯入
 // ═══════════════════════════════════════════
 function exportJSON() {
   document.getElementById('export-menu').classList.remove('open');
   const exportObj = JSON.parse(JSON.stringify(data));
-  const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
+  const jsonStr = JSON.stringify(exportObj, null, 2);
   const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
-  a.download = `${safeName}行程.json`;
-  a.click();
-  showToast('📋 JSON 已匯出！');
+  const filename = `${safeName}行程.json`;
+
+  // 偵測是否在 LINE / WebView 環境（不支援 download 屬性）
+  const ua = navigator.userAgent || '';
+  const isLineOrWebView = /Line|KAKAOTALK|FBIOS|Instagram|WebView|wv\b/.test(ua)
+    || (ua.includes('iPhone') && !ua.includes('Safari'))
+    || (typeof window.webkit !== 'undefined' && !navigator.userAgent.includes('Safari/'));
+
+  if (isLineOrWebView) {
+    // LINE 瀏覽器不支援下載，改為顯示 JSON 讓使用者複製/分享
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = `
+      <div style="background:white;border-radius:20px;padding:20px;max-width:480px;width:100%;max-height:80vh;display:flex;flex-direction:column;gap:12px;">
+        <div style="font-family:'Noto Serif TC',serif;font-size:1rem;font-weight:700;color:#1a6b8a;">📋 匯出 JSON</div>
+        <p style="font-size:0.8rem;color:#4a6274;">LINE 瀏覽器不支援直接下載。請長按下方文字全選後複製，再貼到記事本儲存為 .json 檔案。</p>
+        <textarea readonly style="flex:1;min-height:200px;border:1.5px solid #cce0ea;border-radius:10px;padding:8px;font-size:0.7rem;font-family:monospace;resize:none;">${jsonStr}</textarea>
+        <div style="display:flex;gap:8px;">
+          <button onclick="navigator.clipboard&&navigator.clipboard.writeText(this.closest('div[style]').querySelector('textarea').value).then(()=>{this.textContent='✅ 已複製！';}).catch(()=>{})" style="flex:1;padding:9px;border-radius:12px;background:#1a6b8a;color:white;border:none;font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;font-weight:600;">📋 複製 JSON</button>
+          <button onclick="this.closest('div[style]').remove()" style="flex:1;padding:9px;border-radius:12px;border:1.5px solid #cce0ea;background:none;color:#4a6274;font-size:0.85rem;cursor:pointer;font-family:'Noto Sans TC',sans-serif;">關閉</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    return;
+  }
+
+  // 一般瀏覽器：直接下載
+  try {
+    const blob = new Blob([jsonStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    showToast('📋 JSON 已匯出！');
+  } catch(e) {
+    showToast('⚠️ 下載失敗，請嘗試用一般瀏覽器開啟');
+  }
 }
 
 // ═══════════════════════════════════════════
@@ -2716,9 +2935,9 @@ function exportHTML() {
         <span class="em-icon">🖼️</span>
         <div><div>匯出圖片</div><div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div></div>
       </button>
-      <button class="export-menu-item" onclick="exportPDF()">
+      <button class="export-menu-item" onclick="openPdfModal()">
         <span class="em-icon">📄</span>
-        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div></div>
+        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份（可選含/不含地圖）</div></div>
       </button>
       <div class="export-menu-sep"></div>
       <button class="export-menu-item" onclick="resetToDefault()">
@@ -2747,18 +2966,47 @@ function exportHTML() {
 <!-- MAP PAGE -->
 <div id="page-map" class="page">
   <!-- 固定區塊：標題 + 分頁 + 地圖 -->
-  <div class="map-sticky-top">
+  <div class="map-sticky-top" id="map-sticky-top">
     <div class="map-page-header">
       <h2>🗺 互動地圖</h2>
       <p>點擊景點可編輯，拖曳地圖縮放</p>
     </div>
     <div class="map-day-tabs" id="map-tabs"></div>
+    <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
     <div id="leaflet-map"></div>
   </div>
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
   <div class="map-scroll-body">
     <div class="map-stop-list" id="map-stop-list"></div>
     <div id="map-nav-btn-wrap"></div>
+  </div>
+</div>
+
+<!-- PDF Export Modal -->
+<div class="modal-overlay" id="pdf-modal" role="dialog" aria-modal="true" aria-label="匯出 PDF">
+  <div class="modal">
+    <h3>📄 匯出 PDF</h3>
+    <p style="font-size:0.8rem;color:var(--mid);margin-bottom:4px;">請選擇要包含的內容：</p>
+    <div class="pdf-option-group">
+      <div class="pdf-option-item selected" id="pdf-opt-with-map" onclick="selectPdfOption(\'with-map\')">
+        <span class="pdf-option-icon">🗺</span>
+        <div>
+          <div class="pdf-option-label">含地圖</div>
+          <div class="pdf-option-desc">每天行程附上路線地圖截圖（較慢）</div>
+        </div>
+      </div>
+      <div class="pdf-option-item" id="pdf-opt-no-map" onclick="selectPdfOption(\'no-map\')">
+        <span class="pdf-option-icon">📋</span>
+        <div>
+          <div class="pdf-option-label">不含地圖</div>
+          <div class="pdf-option-desc">僅行程文字，速度較快</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="closePdfModal()">取消</button>
+      <button class="btn-save" onclick="confirmExportPDF()">開始匯出</button>
+    </div>
   </div>
 </div>
 
@@ -3195,7 +3443,7 @@ function showToast(msg) {
 // ═══════════════════════════════════════════
 // MODAL CLOSE ON OVERLAY CLICK
 // ═══════════════════════════════════════════
-['stop-modal','transit-modal','title-modal','subtitle-modal','day-modal','img-export-modal'].forEach(id => {
+['stop-modal','transit-modal','title-modal','subtitle-modal','day-modal','img-export-modal','pdf-modal'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e) {
     if (e.target === this) this.classList.remove('open');
   });
