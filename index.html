@@ -155,6 +155,34 @@ body {
 .page { display: none; padding: 24px 16px 80px; max-width: 720px; margin: 0 auto; }
 .page.active { display: block; }
 
+/* ── MAP PAGE STICKY LAYOUT ── */
+#page-map.active {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+  height: calc(100vh - 56px); /* subtract nav height */
+  overflow: hidden;
+}
+.map-sticky-top {
+  flex-shrink: 0;
+  padding: 16px 16px 0;
+  background: #e8f4f8;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+.map-scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
 /* ── HEADER ── */
 .header {
   text-align: center;
@@ -604,11 +632,11 @@ body {
 /* ── LEAFLET MAP ── */
 #leaflet-map {
   width: 100%;
-  height: 380px;
+  height: clamp(220px, 38vh, 380px);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(26,107,138,0.15);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   background: var(--light);
   z-index: 1;
 }
@@ -1256,14 +1284,20 @@ body {
 
 <!-- MAP PAGE -->
 <div id="page-map" class="page">
-  <div class="map-page-header">
-    <h2>🗺 互動地圖</h2>
-    <p>點擊景點可編輯，拖曳地圖縮放</p>
+  <!-- 固定區塊：標題 + 分頁 + 地圖 -->
+  <div class="map-sticky-top">
+    <div class="map-page-header">
+      <h2>🗺 互動地圖</h2>
+      <p>點擊景點可編輯，拖曳地圖縮放</p>
+    </div>
+    <div class="map-day-tabs" id="map-tabs"></div>
+    <div id="leaflet-map"></div>
   </div>
-  <div class="map-day-tabs" id="map-tabs"></div>
-  <div id="leaflet-map"></div>
-  <div class="map-stop-list" id="map-stop-list"></div>
-  <div id="map-nav-btn-wrap"></div>
+  <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
+  <div class="map-scroll-body">
+    <div class="map-stop-list" id="map-stop-list"></div>
+    <div id="map-nav-btn-wrap"></div>
+  </div>
 </div>
 
 <!-- Stop Edit Modal -->
@@ -2709,14 +2743,20 @@ function exportHTML() {
 
 <!-- MAP PAGE -->
 <div id="page-map" class="page">
-  <div class="map-page-header">
-    <h2>🗺 互動地圖</h2>
-    <p>點擊景點可編輯，拖曳地圖縮放</p>
+  <!-- 固定區塊：標題 + 分頁 + 地圖 -->
+  <div class="map-sticky-top">
+    <div class="map-page-header">
+      <h2>🗺 互動地圖</h2>
+      <p>點擊景點可編輯，拖曳地圖縮放</p>
+    </div>
+    <div class="map-day-tabs" id="map-tabs"></div>
+    <div id="leaflet-map"></div>
   </div>
-  <div class="map-day-tabs" id="map-tabs"></div>
-  <div id="leaflet-map"></div>
-  <div class="map-stop-list" id="map-stop-list"></div>
-  <div id="map-nav-btn-wrap"></div>
+  <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
+  <div class="map-scroll-body">
+    <div class="map-stop-list" id="map-stop-list"></div>
+    <div id="map-nav-btn-wrap"></div>
+  </div>
 </div>
 
 <!-- Stop Edit Modal -->
