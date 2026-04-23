@@ -1,0 +1,2003 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="page-title">澎湖三日遊 · 互動行程</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<!-- html2canvas for image export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --ocean: #1a6b8a;
+  --sky: #5aa8c8;
+  --sky-light: #a8d4e8;
+  --sand: #f5ede0;
+  --coral: #e07a5f;
+  --dark: #1c2b35;
+  --mid: #4a6274;
+  --light: #eaf4f8;
+  --white: #ffffff;
+  --border: #cce0ea;
+  --green: #2d9e6b;
+  --green-bg: #d8f0e4;
+  --amber: #8a6200;
+  --amber-bg: #fef3cd;
+  --amber-light: #b07c20;
+  --amber-light-bg: #fff8e6;
+  --red: #9b3020;
+  --red-bg: #fce4e0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  background: #e8f4f8;
+  min-height: 100vh;
+  color: var(--dark);
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(26,107,138,0.97);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 56px;
+  gap: 4px;
+  box-shadow: 0 2px 16px rgba(26,107,138,0.25);
+  flex-wrap: nowrap;
+  overflow: visible;
+}
+.nav-title {
+  font-family: 'Noto Serif TC', serif;
+  color: white;
+  font-size: 1rem;
+  font-weight: 700;
+  margin-right: auto;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.nav-title:hover { opacity: 0.85; }
+.nav-title-edit-icon { font-size: 0.7rem; opacity: 0.7; }
+.nav-btn {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.28); }
+.nav-btn.active { background: white; color: var(--ocean); font-weight: 600; }
+
+/* Export dropdown */
+.export-wrap {
+  position: relative;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+.nav-export {
+  background: var(--coral);
+  border: none;
+  color: white;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-weight: 600;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-export:hover { background: #c8664d; }
+.export-menu {
+  display: none;
+  position: fixed;
+  top: 56px;
+  right: 12px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 9999;
+}
+.export-menu.open { display: block; }
+.export-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--dark);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: 'Noto Sans TC', sans-serif;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.export-menu-item:hover { background: var(--light); color: var(--ocean); }
+.export-menu-item .em-icon { font-size: 1rem; }
+.export-menu-sep {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 8px;
+}
+
+/* ── PAGES ── */
+.page { display: none; padding: 24px 16px 80px; max-width: 680px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.header h1 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--ocean);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.header h1:hover { opacity: 0.8; }
+.header .subtitle {
+  font-size: 0.83rem;
+  color: var(--mid);
+  margin-top: 6px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.header .subtitle:hover { opacity: 0.75; }
+.edit-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff8e6;
+  border: 1px solid #f0d890;
+  color: #7a5c00;
+  font-size: 0.75rem;
+  padding: 5px 12px;
+  border-radius: 20px;
+  margin-top: 10px;
+}
+
+/* Add Day Button */
+.add-day-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto 24px;
+  padding: 14px;
+  background: white;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  color: var(--mid);
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.2s;
+}
+.add-day-btn:hover { border-color: var(--sky); color: var(--ocean); background: var(--light); }
+
+/* ── DAY CARD ── */
+.day-card {
+  background: var(--white);
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 24px rgba(26,107,138,0.10);
+}
+.day-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px 12px;
+  background: linear-gradient(90deg, var(--ocean) 0%, var(--sky) 100%);
+  color: white;
+}
+.day-badge {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.day-badge:hover { opacity: 0.85; }
+.day-theme-tag {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  background: rgba(255,255,255,0.18);
+  padding: 3px 9px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.day-theme-tag:hover { background: rgba(255,255,255,0.3); }
+.day-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.day-map-btn {
+  background: rgba(255,255,255,0.22);
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.day-map-btn:hover { background: rgba(255,255,255,0.35); }
+.day-delete-btn {
+  background: rgba(255,100,80,0.3);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.day-delete-btn:hover { background: rgba(255,80,60,0.6); }
+
+/* ── STOPS ── */
+.stops { padding: 8px 0 10px; }
+.stop-row {
+  display: flex;
+  align-items: stretch;
+  padding: 0 16px;
+  position: relative;
+}
+.stop-row:hover .stop-content { background: #f7fbfd; border-radius: 12px; }
+.stop-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 30px;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+.stop-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--ocean);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 12px;
+}
+.stop-line {
+  width: 2px;
+  background: var(--border);
+  flex: 1;
+  margin-top: 4px;
+}
+.stop-row.last .stop-line { display: none; }
+
+/* Transit */
+.transit-row {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+}
+.transit-left {
+  display: flex; flex-direction: column; align-items: center;
+  width: 30px; flex-shrink: 0; margin-right: 12px;
+}
+.transit-line-top { width: 2px; height: 6px; background: var(--border); }
+.transit-icon-wrap {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--light); border-radius: 50%;
+  font-size: 0.65rem; color: var(--sky);
+  border: 1.5px dashed var(--sky);
+  flex-shrink: 0;
+}
+.transit-line-bot { width: 2px; flex: 1; min-height: 6px; background: var(--border); }
+.transit-info {
+  font-size: 0.74rem;
+  color: var(--mid);
+  padding: 4px 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.transit-dur {
+  background: var(--light);
+  color: var(--ocean);
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.71rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1px solid transparent;
+}
+.transit-dur:hover { background: #d0eaf5; border-color: var(--sky); }
+
+/* Stop content */
+.stop-content {
+  flex: 1;
+  padding: 10px 8px 8px 0;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.stop-name {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stop-name .edit-icon {
+  opacity: 0;
+  font-size: 0.7rem;
+  color: var(--sky);
+  transition: opacity 0.15s;
+}
+.stop-content:hover .edit-icon { opacity: 1; }
+.stop-meta {
+  display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;
+}
+.tag {
+  font-size: 0.69rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.tag-depart  { background: var(--amber-bg); color: var(--amber); }
+.tag-arrive  { background: var(--amber-bg); color: var(--amber); }
+.tag-leave   { background: var(--amber-light-bg); color: var(--amber-light); }
+.tag-stay    { background: var(--green-bg); color: var(--green); }
+.tag-note    { background: var(--red-bg);   color: var(--red);   }
+
+/* Move stop buttons */
+.stop-move-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-self: center;
+  margin-top: 0;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.stop-row:hover .stop-move-wrap { opacity: 1; }
+.stop-move-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--mid);
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  padding: 0;
+}
+.stop-move-btn:hover { background: var(--light); border-color: var(--sky); color: var(--ocean); }
+.stop-move-btn:disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+
+/* Delete button */
+.stop-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 1rem;
+  align-self: flex-start;
+  margin-top: 12px;
+  transition: color 0.15s, opacity 0.15s;
+}
+.stop-row:hover .stop-delete { opacity: 1; }
+.stop-delete:hover { color: var(--coral); }
+
+/* Add stop button */
+.add-stop-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 16px 12px 58px;
+  background: none;
+  border: 1.5px dashed var(--border);
+  color: var(--mid);
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.2s;
+}
+.add-stop-btn:hover { border-color: var(--sky); color: var(--ocean); background: var(--light); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal h3 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.05rem;
+  color: var(--ocean);
+  margin-bottom: 16px;
+}
+.modal label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--mid);
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+.modal input, .modal select, .modal textarea {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.88rem;
+  color: var(--dark);
+  outline: none;
+  transition: border-color 0.2s;
+  background: white;
+}
+.modal input:focus, .modal select:focus, .modal textarea:focus { border-color: var(--sky); }
+.modal-row { display: flex; gap: 8px; }
+.modal-row > * { flex: 1; }
+.modal-actions {
+  display: flex; gap: 10px; margin-top: 20px;
+}
+.btn-cancel {
+  flex: 1; padding: 9px; border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: none; color: var(--mid);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.85rem; cursor: pointer;
+}
+.btn-save {
+  flex: 2; padding: 9px; border-radius: 12px;
+  border: none; background: var(--ocean); color: white;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-save:hover { background: #155a76; }
+.btn-danger {
+  flex: 1; padding: 9px; border-radius: 12px;
+  border: none; background: #fce4e0; color: var(--red);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 0.85rem; font-weight: 600; cursor: pointer;
+}
+
+/* Transit modal */
+.transit-modal .modal { max-width: 300px; }
+
+/* ── MAP PAGE ── */
+.map-page-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.map-page-header h2 {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.4rem;
+  color: var(--ocean);
+}
+.map-page-header p {
+  font-size: 0.8rem;
+  color: var(--mid);
+  margin-top: 4px;
+}
+.map-day-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.map-day-tab {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border);
+  background: white;
+  color: var(--mid);
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: all 0.2s;
+}
+.map-day-tab.active {
+  background: var(--ocean);
+  border-color: var(--ocean);
+  color: white;
+  font-weight: 600;
+}
+.map-container {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(26,107,138,0.15);
+  margin-bottom: 20px;
+  background: var(--light);
+}
+.map-container iframe {
+  width: 100%;
+  height: 380px;
+  border: none;
+  display: block;
+}
+.map-stop-list {
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 12px rgba(26,107,138,0.08);
+}
+.map-stop-list h4 {
+  font-size: 0.8rem;
+  color: var(--mid);
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+.map-stop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.85rem;
+}
+.map-stop-item:last-child { border-bottom: none; }
+.map-num {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--ocean);
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.map-stop-name { flex: 1; font-weight: 500; }
+.map-drive-time {
+  font-size: 0.72rem;
+  color: var(--ocean);
+  background: var(--light);
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+.map-open-btn {
+  display: block;
+  text-align: center;
+  background: var(--ocean);
+  color: white;
+  padding: 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 12px;
+  font-family: 'Noto Sans TC', sans-serif;
+  transition: background 0.2s;
+}
+.map-open-btn:hover { background: #155a76; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(60px);
+  background: var(--dark);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  z-index: 400;
+  transition: transform 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── EXPORT IMAGE MODAL ── */
+.img-export-modal .modal { max-width: 360px; }
+.img-day-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.img-day-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Noto Sans TC', sans-serif;
+  background: none;
+  color: var(--dark);
+}
+.img-day-item:hover { border-color: var(--sky); background: var(--light); color: var(--ocean); }
+.img-day-item .iday-label { font-weight: 500; }
+.img-day-item .iday-stops { font-size: 0.72rem; color: var(--mid); margin-top: 2px; }
+.img-day-item-inner { text-align: left; }
+
+/* ── PRINT / IMAGE CAPTURE STYLES ── */
+.capture-card {
+  width: 680px;
+  font-family: 'Noto Sans TC', sans-serif;
+  background: white;
+  border-radius: 0;
+  padding: 0;
+  position: absolute;
+  left: -9999px;
+  top: 0;
+}
+.capture-header {
+  background: linear-gradient(135deg, var(--ocean) 0%, var(--sky) 100%);
+  color: white;
+  padding: 28px 32px 22px;
+  text-align: center;
+}
+.capture-header .ch-emoji { font-size: 2rem; margin-bottom: 8px; display: block; }
+.capture-header .ch-title {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+.capture-header .ch-sub {
+  font-size: 0.85rem;
+  opacity: 0.85;
+  letter-spacing: 0.04em;
+}
+.capture-header .ch-day {
+  display: inline-block;
+  background: rgba(255,255,255,0.22);
+  padding: 5px 18px;
+  border-radius: 20px;
+  margin-top: 12px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.capture-body {
+  padding: 16px 24px 20px;
+  background: white;
+}
+.capture-stop-row {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 0;
+}
+.cap-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  flex-shrink: 0;
+  margin-right: 14px;
+}
+.cap-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--ocean);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  margin-top: 14px;
+}
+.cap-line {
+  width: 2px;
+  background: var(--border);
+  flex: 1;
+  margin-top: 4px;
+}
+.cap-last .cap-line { display: none; }
+.cap-content {
+  flex: 1;
+  padding: 12px 0 8px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.cap-last .cap-content { border-bottom: none; }
+.cap-name {
+  font-family: 'Noto Serif TC', serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.3;
+}
+.cap-tags {
+  display: flex;
+  gap: 6px;
+  margin-top: 5px;
+  flex-wrap: wrap;
+}
+.cap-transit {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0 3px 46px;
+}
+.cap-transit-text {
+  font-size: 0.72rem;
+  color: var(--sky);
+  background: var(--light);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.capture-footer {
+  background: var(--light);
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--mid);
+  border-top: 1px solid var(--border);
+}
+
+/* Progress overlay */
+.progress-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(26,107,138,0.85);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.progress-overlay.open { display: flex; }
+.progress-text {
+  color: white;
+  font-size: 1rem;
+  font-family: 'Noto Serif TC', serif;
+  letter-spacing: 0.05em;
+}
+.progress-bar-wrap {
+  width: 240px;
+  height: 6px;
+  background: rgba(255,255,255,0.3);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 10px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── INLINE DAY MAP ── */
+.day-inline-map {
+  display: none;
+  border-top: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--light);
+}
+.day-inline-map.open {
+  display: block;
+  animation: mapFadeIn 0.28s ease;
+}
+@keyframes mapFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.day-map-iframe-wrap {
+  width: 100%;
+  height: 320px;
+  position: relative;
+  background: var(--light);
+}
+.day-map-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+.day-map-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: white;
+  border-top: 1px solid var(--border);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.day-map-stops-preview {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+.day-map-stop-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.69rem;
+  color: var(--mid);
+  background: var(--light);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.day-map-stop-chip-num {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--ocean);
+  color: white;
+  font-size: 0.58rem;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.day-map-gmaps-btn {
+  background: var(--ocean);
+  color: white;
+  border: none;
+  padding: 6px 13px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.day-map-gmaps-btn:hover { background: #155a76; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <span class="nav-title" onclick="editTripTitle()" title="點擊編輯旅遊名稱">
+    <span id="nav-title-text">🏝 澎湖三日遊</span>
+    <span class="nav-title-edit-icon">✏️</span>
+  </span>
+  <button class="nav-btn active" onclick="showPage('itinerary')">📋 行程</button>
+  <div class="export-wrap">
+    <button class="nav-export" onclick="toggleExportMenu()">⬇ 匯出 ▾</button>
+    <div class="export-menu" id="export-menu">
+      <button class="export-menu-item" onclick="saveHTML()">
+        <span class="em-icon">💾</span>
+        <div>
+          <div>儲存 HTML</div>
+          <div style="font-size:0.72rem;color:var(--mid)">保存目前行程</div>
+        </div>
+      </button>
+      <div class="export-menu-sep"></div>
+      <button class="export-menu-item" onclick="openImgExport()">
+        <span class="em-icon">🖼️</span>
+        <div>
+          <div>匯出圖片</div>
+          <div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div>
+        </div>
+      </button>
+      <button class="export-menu-item" onclick="exportPDF()">
+        <span class="em-icon">📄</span>
+        <div>
+          <div>匯出 PDF</div>
+          <div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ITINERARY PAGE -->
+<div id="page-itinerary" class="page active">
+  <div class="header">
+    <h1 id="header-title" onclick="editTripTitle()">🏝 澎湖三日遊 <span style="font-size:0.8rem;color:var(--sky);font-weight:400">✏️</span></h1>
+    <p class="subtitle" id="trip-subtitle" onclick="editSubtitle()">4/26（五）— 4/28（日）· 鎖港郵局會館 <span style="font-size:0.75rem">✏️</span></p>
+    <br>
+    <span class="edit-hint">✏️ 點擊任意景點、車程、天數標題可直接編輯</span>
+  </div>
+  <div id="days-container"></div>
+  <button class="add-day-btn" onclick="addDay()">＋ 新增天數</button>
+</div>
+
+<!-- MAP PAGE -->
+<div id="page-map" class="page">
+  <div class="map-page-header">
+    <h2>🗺 路線地圖</h2>
+    <p>點擊各天標籤切換路線</p>
+  </div>
+  <div class="map-day-tabs" id="map-tabs"></div>
+  <div id="map-content"></div>
+</div>
+
+<!-- Stop Edit Modal -->
+<div class="modal-overlay" id="stop-modal">
+  <div class="modal">
+    <h3>✏️ 編輯景點</h3>
+    <label>景點名稱</label>
+    <input type="text" id="edit-name" placeholder="景點名稱">
+    <label>備註（可選）</label>
+    <input type="text" id="edit-note" placeholder="如：大菓葉・鯨魚洞">
+    <div class="modal-row">
+      <div>
+        <label>離開時間</label>
+        <input type="time" id="edit-depart" oninput="onDepartChange()">
+      </div>
+      <div>
+        <label>停留（分鐘）</label>
+        <input type="number" id="edit-stay" min="0" max="600" step="5" placeholder="分鐘" oninput="onStayChange()">
+      </div>
+    </div>
+    <p id="modal-arrival-hint" style="font-size:0.74rem;color:var(--mid);margin-top:6px;min-height:1.2em"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveStop()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transit Edit Modal -->
+<div class="modal-overlay transit-modal" id="transit-modal">
+  <div class="modal">
+    <h3>🚗 編輯車程</h3>
+    <label>車程時間（分鐘）</label>
+    <input type="number" id="edit-drive" min="1" max="360" step="1" placeholder="分鐘">
+    <p style="font-size:0.75rem;color:var(--mid);margin-top:8px;">修改後，後續景點的出發時間將自動重新計算</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTransitModal()">取消</button>
+      <button class="btn-save" onclick="saveDrive()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trip Title Edit Modal -->
+<div class="modal-overlay" id="title-modal">
+  <div class="modal">
+    <h3>✏️ 編輯旅遊名稱</h3>
+    <label>旅遊名稱（含 emoji）</label>
+    <input type="text" id="edit-trip-title" placeholder="🏝 澎湖三日遊">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTitleModal()">取消</button>
+      <button class="btn-save" onclick="saveTripTitle()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subtitle Edit Modal -->
+<div class="modal-overlay" id="subtitle-modal">
+  <div class="modal">
+    <h3>✏️ 編輯副標題</h3>
+    <label>日期與住宿資訊</label>
+    <input type="text" id="edit-subtitle" placeholder="4/26（五）— 4/28（日）· 鎖港郵局會館">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSubtitleModal()">取消</button>
+      <button class="btn-save" onclick="saveSubtitle()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day Edit Modal -->
+<div class="modal-overlay" id="day-modal">
+  <div class="modal">
+    <h3>✏️ 編輯天數資訊</h3>
+    <label>天數標籤（如：Day 1 · 4/26（五））</label>
+    <input type="text" id="edit-day-label" placeholder="Day 1 · 4/26（五）">
+    <label>主題（如：抵達 · 夜遊市區）</label>
+    <input type="text" id="edit-day-theme" placeholder="抵達 · 夜遊市區">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDayModal()">取消</button>
+      <button class="btn-save" onclick="saveDayInfo()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Export Modal -->
+<div class="modal-overlay img-export-modal" id="img-export-modal">
+  <div class="modal">
+    <h3>🖼️ 匯出圖片</h3>
+    <p style="font-size:0.8rem;color:var(--mid);margin-bottom:12px;">選擇要匯出的天數，每天產出一張 PNG 圖片，方便分享到 LINE 群組。</p>
+    <div class="img-day-list" id="img-day-list"></div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="closeImgExport()">關閉</button>
+      <button class="btn-save" onclick="exportAllDaysImg()">📥 全部下載</button>
+    </div>
+  </div>
+</div>
+
+<!-- Progress overlay -->
+<div class="progress-overlay" id="progress-overlay">
+  <div class="progress-text" id="progress-text">正在產生圖片…</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
+let data = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:10","stay":0,"note":""},{"name":"🏨 鎖港郵局會館","depart":"18:50","stay":20,"note":""},{"name":"🍽 新村美食館","depart":"20:30","stay":90,"note":""},{"name":"🛍 市區中正路商圈","depart":"21:15","stay":45,"note":""},{"name":"🏨 鎖港郵局會館","depart":"21:35","stay":0,"note":"抵達・休息"}],"drives":[20,10,5,20]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🥐 文康街早餐","depart":"09:00","stay":0,"note":""},{"name":"🐠 澎湖水族館","depart":"10:40","stay":75,"note":""},{"name":"🌊 摩西分海","depart":"12:40","stay":90,"note":""},{"name":"🍜 西嶼午餐","depart":"14:30","stay":70,"note":""},{"name":"🗿 西嶼景點","depart":"16:15","stay":95,"note":"大菓葉・鯨魚洞"},{"name":"🏨 鎖港郵局會館","depart":"18:20","stay":90,"note":"梳洗"},{"name":"🎆 觀音亭花火節","depart":"21:40","stay":200,"note":""},{"name":"🏨 鎖港郵局會館","depart":"22:00","stay":0,"note":"抵達・休息"}],"drives":[25,30,40,10,35,10,20]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":""},{"name":"🏛 舊郵便局（澎湖水下文化遺產博物館）","depart":"11:20","stay":125,"note":""},{"name":"🛍 午餐與伴手禮","depart":"12:45","stay":85,"note":""},{"name":"✈️ 澎湖機場","depart":"13:25","stay":0,"note":"班機 15:30"}],"drives":[15,5,40]}],"mapPlaces":[["澎湖機場","鎖港郵局會館澎湖","新村美食館馬公","中正路商圈馬公","鎖港郵局會館澎湖"],["文康街馬公","澎湖水族館","摩西分海澎湖","西嶼餐廳澎湖","大菓葉澎湖","鎖港郵局會館澎湖","觀音亭澎湖","鎖港郵局會館澎湖"],["鎖港郵局會館澎湖","舊郵便局馬公澎湖","中正路馬公伴手禮","澎湖機場"]]};
+
+// ═══════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════
+function timeToMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+function minutesToTime(mins) {
+  const h = Math.floor(mins / 60) % 24;
+  const m = mins % 60;
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function stayLabel(mins) {
+  if (!mins) return null;
+  if (mins < 60) return `停留 ${mins} 分鐘`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m ? `停留 ${h} 小時 ${m} 分` : `停留 ${h} 小時`;
+}
+function recalcTimes(dayIdx, fromIdx) {
+  // stop.depart = 離開時間
+  // 下一站抵達 = 這站離開 + 車程
+  // 下一站離開 = 下一站抵達 + 下一站停留
+  const day = data.days[dayIdx];
+  const start = (fromIdx !== undefined) ? fromIdx : 0;
+  for (let i = start; i < day.stops.length - 1; i++) {
+    const leaveMins   = timeToMinutes(day.stops[i].depart);
+    const driveMins   = day.drives[i] || 0;
+    const nextArrMins = leaveMins + driveMins;
+    const nextStay    = day.stops[i + 1].stay || 0;
+    day.stops[i + 1].depart = minutesToTime(nextArrMins + nextStay);
+  }
+}
+
+// ═══════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════
+function renderAll() {
+  document.getElementById('nav-title-text').textContent = data.title;
+  document.getElementById('header-title').innerHTML = `${data.title} <span style="font-size:0.8rem;color:var(--sky);font-weight:400">✏️</span>`;
+  document.getElementById('trip-subtitle').innerHTML = `${data.subtitle} <span style="font-size:0.75rem">✏️</span>`;
+  document.title = data.title.replace(/[\u{1F300}-\u{1FFFF}]/gu, '').trim() + ' · 互動行程';
+  renderItinerary();
+  renderMap();
+}
+
+function renderItinerary() {
+  const container = document.getElementById('days-container');
+  container.innerHTML = '';
+
+  data.days.forEach((day, di) => {
+    const card = document.createElement('div');
+    card.className = 'day-card';
+    card.innerHTML = `
+      <div class="day-header">
+        <span class="day-badge" onclick="editDay(${di})" title="點擊編輯天數資訊">🗓 ${day.label} <span style="font-size:0.65rem;opacity:0.7">✏️</span></span>
+        <span class="day-theme-tag" onclick="editDay(${di})">${day.theme}</span>
+        <div class="day-header-actions">
+          <button class="day-map-btn" id="mapbtn-${di}" onclick="toggleInlineMap(${di})">🗺 導航</button>
+          <button class="day-delete-btn" onclick="deleteDay(${di})" title="刪除此天">✕</button>
+        </div>
+      </div>
+      <div class="stops" id="stops-${di}"></div>
+      <button class="add-stop-btn" onclick="addStop(${di})">＋ 新增景點</button>
+      <div class="day-inline-map" id="inline-map-${di}">
+        <div class="day-map-iframe-wrap" id="map-iframe-wrap-${di}"></div>
+        <div class="day-map-footer">
+          <div class="day-map-stops-preview" id="map-chips-${di}"></div>
+          <a class="day-map-gmaps-btn" id="gmaps-btn-${di}" href="#" target="_blank">🗺 在 Google Maps 開啟</a>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+    renderStops(di);
+  });
+}
+
+function renderStops(di) {
+  const day = data.days[di];
+  const container = document.getElementById(`stops-${di}`);
+  container.innerHTML = '';
+
+  day.stops.forEach((stop, si) => {
+    const isLast = si === day.stops.length - 1;
+    const row = document.createElement('div');
+    row.className = `stop-row${isLast ? ' last' : ''}`;
+
+    // Compute arrival time for this stop
+    let arriveTag = '';
+    if (si > 0) {
+      const prevStop = day.stops[si - 1];
+      const drive = day.drives[si - 1] || 0;
+      const arrMins = timeToMinutes(prevStop.depart) + drive;
+      arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
+    }
+
+    // Leave tag (only for non-last stops): stop.depart = leave time
+    const leaveTag = !isLast
+      ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
+      : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
+
+    const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+
+    row.innerHTML = `
+      <div class="stop-left">
+        <div class="stop-num">${si + 1}</div>
+        <div class="stop-line"></div>
+      </div>
+      <div class="stop-content" onclick="editStop(${di},${si})">
+        <div class="stop-name">${stop.name} <span class="edit-icon">✏️</span></div>
+        <div class="stop-meta">${arriveTag}${leaveTag}${noteTag}</div>
+      </div>
+      <div class="stop-move-wrap">
+        <button class="stop-move-btn" onclick="moveStop(${di},${si},-1)" title="上移" ${si === 0 ? 'disabled' : ''}>▲</button>
+        <button class="stop-move-btn" onclick="moveStop(${di},${si},1)" title="下移" ${isLast ? 'disabled' : ''}>▼</button>
+      </div>
+      <button class="stop-delete" onclick="deleteStop(${di},${si})" title="刪除">✕</button>
+    `;
+    container.appendChild(row);
+
+    if (!isLast) {
+      const tr = document.createElement('div');
+      tr.className = 'transit-row';
+      tr.innerHTML = `
+        <div class="transit-left">
+          <div class="transit-line-top"></div>
+          <div class="transit-icon-wrap">🚗</div>
+          <div class="transit-line-bot"></div>
+        </div>
+        <div class="transit-info">
+          <span class="transit-dur" onclick="editDrive(${di},${si})" title="點擊編輯車程">約 ${day.drives[si]} 分鐘 ✏️</span>
+        </div>
+      `;
+      container.appendChild(tr);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════
+// MAP — 獨立地圖頁（保留原有功能）
+// ═══════════════════════════════════════════
+let currentMapDay = 0;
+
+function buildMapURL(dayIdx) {
+  const stops = data.days[dayIdx].stops;
+  const places = data.mapPlaces[dayIdx] || stops.map(s => s.name + ' 澎湖');
+  if (places.length < 2) return '';
+  const origin      = encodeURIComponent(places[0]);
+  const destination = encodeURIComponent(places[places.length - 1]);
+  const waypoints   = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
+  let url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=${origin}&destination=${destination}&mode=driving&language=zh-TW`;
+  if (waypoints) url += `&waypoints=${waypoints}`;
+  return url;
+}
+
+function renderMap() {
+  const tabsEl = document.getElementById('map-tabs');
+  tabsEl.innerHTML = '';
+  data.days.forEach((day, di) => {
+    const btn = document.createElement('button');
+    btn.className = `map-day-tab${di === currentMapDay ? ' active' : ''}`;
+    btn.textContent = `Day ${di + 1}`;
+    btn.onclick = () => { currentMapDay = di; renderMap(); };
+    tabsEl.appendChild(btn);
+  });
+
+  const day   = data.days[currentMapDay];
+  const stops = day.stops;
+  const drives = day.drives;
+  const mapURL = buildMapURL(currentMapDay);
+
+  let listHTML = stops.map((s, i) => {
+    const driveAfter = i < drives.length ? `<span class="map-drive-time">↓ 約 ${drives[i]} 分</span>` : '';
+    return `
+      <div class="map-stop-item">
+        <div class="map-num">${i + 1}</div>
+        <div class="map-stop-name">${s.name}</div>
+        <div style="font-size:0.75rem;color:var(--mid)">${s.depart}</div>
+      </div>
+      ${driveAfter ? `<div style="padding:0 0 0 32px;font-size:0.72rem;color:var(--sky);margin-bottom:2px">${driveAfter}</div>` : ''}
+    `;
+  }).join('');
+
+  const places = data.mapPlaces[currentMapDay] || stops.map(s => s.name + ' 澎湖');
+  const navURL = `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
+
+  document.getElementById('map-content').innerHTML = `
+    <div class="map-container">
+      <iframe src="${mapURL}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+    </div>
+    <div class="map-stop-list">
+      <h4>📍 Day ${currentMapDay + 1} 路線景點</h4>
+      ${listHTML}
+      <a href="${navURL}" target="_blank" class="map-open-btn">🗺 在 Google Maps 開啟導航</a>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════
+// INLINE MAP — Day 卡片內展開
+// ═══════════════════════════════════════════
+const _mapOpen = {};  // di → bool
+
+// 從 stop.name 萃取乾淨文字（去 emoji），加上地區後綴
+function _stopToPlace(stopName) {
+  const clean = stopName.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+  // 若已包含地名關鍵字就不再附加
+  if (/澎湖|馬公|西嶼|湖西|白沙|望安|七美/.test(clean)) return clean;
+  return clean + ' 澎湖';
+}
+
+function _buildInlineMapURL(di) {
+  const day    = data.days[di];
+  const stops  = day.stops;
+  // 優先用 mapPlaces，否則從 stop.name 推導
+  const places = (data.mapPlaces[di] && data.mapPlaces[di].length === stops.length)
+    ? data.mapPlaces[di]
+    : stops.map(s => _stopToPlace(s.name));
+
+  if (places.length < 2) return '';
+  const origin      = encodeURIComponent(places[0]);
+  const destination = encodeURIComponent(places[places.length - 1]);
+  const waypoints   = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
+  let url = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&origin=${origin}&destination=${destination}&mode=driving&language=zh-TW`;
+  if (waypoints) url += `&waypoints=${waypoints}`;
+  return url;
+}
+
+function _buildNavURL(di) {
+  const day    = data.days[di];
+  const places = (data.mapPlaces[di] && data.mapPlaces[di].length === day.stops.length)
+    ? data.mapPlaces[di]
+    : day.stops.map(s => _stopToPlace(s.name));
+  return `https://www.google.com/maps/dir/${places.map(p => encodeURIComponent(p)).join('/')}`;
+}
+
+function _renderInlineMap(di) {
+  const day      = data.days[di];
+  const mapURL   = _buildInlineMapURL(di);
+  const navURL   = _buildNavURL(di);
+
+  // iframe
+  document.getElementById(`map-iframe-wrap-${di}`).innerHTML =
+    mapURL
+      ? `<iframe src="${mapURL}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`
+      : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:0.82rem;color:var(--mid)">景點不足，無法顯示地圖</div>`;
+
+  // 景點 chips（序號 + 名稱）
+  document.getElementById(`map-chips-${di}`).innerHTML = day.stops.map((s, i) => {
+    const name = s.name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+    const label = name.length > 7 ? name.slice(0, 7) + '…' : name;
+    return `<span class="day-map-stop-chip">
+      <span class="day-map-stop-chip-num">${i + 1}</span>${label}
+    </span>`;
+  }).join('');
+
+  // Google Maps 連結
+  document.getElementById(`gmaps-btn-${di}`).href = navURL;
+}
+
+function toggleInlineMap(di) {
+  const panel = document.getElementById(`inline-map-${di}`);
+  const btn   = document.getElementById(`mapbtn-${di}`);
+  const isOpen = _mapOpen[di];
+
+  if (isOpen) {
+    panel.classList.remove('open');
+    btn.textContent = '🗺 導航';
+    _mapOpen[di] = false;
+  } else {
+    // 每次展開都重新產生 URL，確保景點異動後地圖同步
+    _renderInlineMap(di);
+    panel.classList.add('open');
+    btn.textContent = '✕ 收起';
+    _mapOpen[di] = true;
+    // 展開後平滑捲到地圖
+    setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+  }
+}
+
+function openDayMap(di) {
+  window.open(_buildNavURL(di), '_blank');
+}
+
+function jumpToMap(di) {
+  currentMapDay = di;
+  showPage('map');
+}
+
+// ═══════════════════════════════════════════
+// EDIT STOP
+// ═══════════════════════════════════════════
+let editTarget = null;
+function editStop(di, si) {
+  editTarget = { di, si };
+  const stop = data.days[di].stops[si];
+  document.getElementById('edit-name').value = stop.name;
+  document.getElementById('edit-note').value = stop.note || '';
+  document.getElementById('edit-depart').value = stop.depart;
+  document.getElementById('edit-stay').value = stop.stay || '';
+  document.getElementById('stop-modal').classList.add('open');
+  updateModalHint();
+}
+
+// 連動邏輯說明：
+//   「抵達時間」= 上一站 depart + 上一站 stay + 車程（固定，不受編輯影響）
+//   「出發時間」= 抵達時間 + 停留分鐘
+//   改「停留分鐘」→ 出發時間 = 抵達時間 + 新停留分鐘
+//   改「出發時間」→ 停留分鐘 = 新出發時間 - 抵達時間（最小為 0）
+
+function getArrivalMins() {
+  // 本站抵達 = 上一站離開（depart）+ 車程
+  if (!editTarget) return null;
+  const { di, si } = editTarget;
+  const day = data.days[di];
+  if (si === 0) return null;
+  const prevStop = day.stops[si - 1];
+  const drive = day.drives[si - 1] || 0;
+  return timeToMinutes(prevStop.depart) + drive;
+}
+
+function onStayChange() {
+  if (!editTarget) return;
+  const stayVal = parseInt(document.getElementById('edit-stay').value);
+  if (isNaN(stayVal) || stayVal < 0) return;
+  const arrivalMins = getArrivalMins();
+  if (arrivalMins === null) return; // 第一站無法反推出發時間
+  // 離開時間 = 抵達時間 + 停留分鐘
+  document.getElementById('edit-depart').value = minutesToTime(arrivalMins + stayVal);
+  updateModalHint();
+}
+
+function onDepartChange() {
+  if (!editTarget) return;
+  const departVal = document.getElementById('edit-depart').value;
+  if (!departVal) return;
+  const arrivalMins = getArrivalMins();
+  if (arrivalMins === null) return; // 第一站無法反推停留分鐘
+  // 停留分鐘 = 離開時間 - 抵達時間
+  const stayMins = Math.max(0, timeToMinutes(departVal) - arrivalMins);
+  document.getElementById('edit-stay').value = stayMins;
+  updateModalHint();
+}
+
+function updateModalHint() {
+  const hint = document.getElementById('modal-arrival-hint');
+  if (!editTarget) { hint.textContent = ''; return; }
+  const { di, si } = editTarget;
+  const day = data.days[di];
+  const arrivalMins = getArrivalMins();
+  const departVal = document.getElementById('edit-depart').value;
+  if (!departVal) { hint.textContent = ''; return; }
+  // edit-depart = 離開時間（arrivalMins + stay）
+  const leaveMins = timeToMinutes(departVal);
+  const drive = day.drives[si] || 0;
+  const isLast = si === day.stops.length - 1;
+  const stayVal = parseInt(document.getElementById('edit-stay').value) || 0;
+
+  let hint1 = arrivalMins !== null ? `抵達 ${minutesToTime(arrivalMins)}` : '';
+  let hint2 = stayVal ? `停留 ${stayVal} 分鐘後 ${minutesToTime(leaveMins)} 離開` : `${minutesToTime(leaveMins)} 離開`;
+  let hint3 = (!isLast && drive) ? `→ 下一站約 ${minutesToTime(leaveMins + drive)} 抵達` : '';
+
+  hint.textContent = [hint1, hint2, hint3].filter(Boolean).join('　');
+}
+function saveStop() {
+  const { di, si } = editTarget;
+  const stop = data.days[di].stops[si];
+  stop.name = document.getElementById('edit-name').value || stop.name;
+  stop.note = document.getElementById('edit-note').value;
+  stop.depart = document.getElementById('edit-depart').value || stop.depart;
+  stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
+  recalcTimes(di, si);
+  closeModal();
+  renderStops(di);
+  showToast('✅ 已儲存，時間已重新計算');
+}
+function closeModal() {
+  document.getElementById('stop-modal').classList.remove('open');
+  editTarget = null;
+}
+
+// ═══════════════════════════════════════════
+// EDIT DRIVE TIME
+// ═══════════════════════════════════════════
+let driveTarget = null;
+function editDrive(di, si) {
+  driveTarget = { di, si };
+  document.getElementById('edit-drive').value = data.days[di].drives[si];
+  document.getElementById('transit-modal').classList.add('open');
+}
+function saveDrive() {
+  const { di, si } = driveTarget;
+  const val = parseInt(document.getElementById('edit-drive').value);
+  if (val > 0) {
+    data.days[di].drives[si] = val;
+    recalcTimes(di);
+    renderStops(di);
+    showToast('🚗 車程已更新，時間重新計算');
+  }
+  closeTransitModal();
+}
+function closeTransitModal() {
+  document.getElementById('transit-modal').classList.remove('open');
+  driveTarget = null;
+}
+
+// ═══════════════════════════════════════════
+// ADD / DELETE STOP
+// ═══════════════════════════════════════════
+function addStop(di) {
+  const day = data.days[di];
+  const lastStop = day.stops[day.stops.length - 1];
+  day.stops.push({ name: "🆕 新景點", depart: lastStop.depart, stay: 60, note: "" });
+  day.drives.push(15);
+  recalcTimes(di);
+  renderStops(di);
+  editStop(di, day.stops.length - 1);
+}
+function deleteStop(di, si) {
+  const day = data.days[di];
+  if (day.stops.length <= 2) { showToast('⚠️ 至少需要保留 2 個景點'); return; }
+  day.stops.splice(si, 1);
+  if (si < day.drives.length) day.drives.splice(si, 1);
+  recalcTimes(di);
+  renderStops(di);
+  showToast('🗑 已刪除景點');
+}
+
+function moveStop(di, si, dir) {
+  const day = data.days[di];
+  const targetIdx = si + dir;
+  if (targetIdx < 0 || targetIdx >= day.stops.length) return;
+
+  // Swap stops
+  [day.stops[si], day.stops[targetIdx]] = [day.stops[targetIdx], day.stops[si]];
+
+  // Swap drives: drive[i] is the drive FROM stop[i] TO stop[i+1]
+  // When moving stop si down (dir=1): swap drives[si] and drives[si+1] only if both exist
+  // When moving stop si up (dir=-1): swap drives[si-1] and drives[si]
+  const driveIdx = dir === 1 ? si : si - 1;
+  if (driveIdx >= 0 && driveIdx + 1 < day.drives.length) {
+    [day.drives[driveIdx], day.drives[driveIdx + 1]] = [day.drives[driveIdx + 1], day.drives[driveIdx]];
+  }
+
+  recalcTimes(di);
+  renderStops(di);
+  showToast('↕️ 景點已移動，時間已重新計算');
+}
+
+// ═══════════════════════════════════════════
+// ADD / DELETE DAY
+// ═══════════════════════════════════════════
+function addDay() {
+  const dayNum = data.days.length + 1;
+  const newDay = {
+    label: `Day ${dayNum}`,
+    theme: "新的一天",
+    stops: [
+      { name: "🏨 住宿出發", depart: "09:00", stay: 0, note: "" },
+      { name: "📍 目的地", depart: "10:00", stay: 60, note: "" }
+    ],
+    drives: [30]
+  };
+  data.days.push(newDay);
+  // Ensure mapPlaces has an entry
+  if (!data.mapPlaces) data.mapPlaces = [];
+  data.mapPlaces.push(newDay.stops.map(s => s.name));
+  renderItinerary();
+  showToast(`✅ 已新增 Day ${dayNum}，請點擊標題編輯資訊`);
+  // Scroll to new card
+  setTimeout(() => {
+    const cards = document.querySelectorAll('.day-card');
+    if (cards.length) cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function deleteDay(di) {
+  if (data.days.length <= 1) { showToast('⚠️ 至少需要保留 1 天'); return; }
+  const dayLabel = data.days[di].label;
+  if (!confirm(`確定要刪除「${dayLabel}」嗎？`)) return;
+  data.days.splice(di, 1);
+  if (data.mapPlaces) data.mapPlaces.splice(di, 1);
+  renderItinerary();
+  showToast(`🗑 已刪除 ${dayLabel}`);
+}
+
+// ═══════════════════════════════════════════
+// EDIT DAY INFO
+// ═══════════════════════════════════════════
+let editDayTarget = null;
+function editDay(di) {
+  editDayTarget = di;
+  document.getElementById('edit-day-label').value = data.days[di].label;
+  document.getElementById('edit-day-theme').value = data.days[di].theme;
+  document.getElementById('day-modal').classList.add('open');
+}
+function saveDayInfo() {
+  const di = editDayTarget;
+  data.days[di].label = document.getElementById('edit-day-label').value || data.days[di].label;
+  data.days[di].theme = document.getElementById('edit-day-theme').value || data.days[di].theme;
+  closeDayModal();
+  renderItinerary();
+  showToast('✅ 天數資訊已更新');
+}
+function closeDayModal() {
+  document.getElementById('day-modal').classList.remove('open');
+  editDayTarget = null;
+}
+
+// ═══════════════════════════════════════════
+// EDIT TRIP TITLE & SUBTITLE
+// ═══════════════════════════════════════════
+function editTripTitle() {
+  document.getElementById('edit-trip-title').value = data.title;
+  document.getElementById('title-modal').classList.add('open');
+}
+function saveTripTitle() {
+  data.title = document.getElementById('edit-trip-title').value || data.title;
+  closeTitleModal();
+  renderAll();
+  showToast('✅ 旅遊名稱已更新');
+}
+function closeTitleModal() {
+  document.getElementById('title-modal').classList.remove('open');
+}
+
+function editSubtitle() {
+  document.getElementById('edit-subtitle').value = data.subtitle;
+  document.getElementById('subtitle-modal').classList.add('open');
+}
+function saveSubtitle() {
+  data.subtitle = document.getElementById('edit-subtitle').value || data.subtitle;
+  closeSubtitleModal();
+  renderAll();
+  showToast('✅ 副標題已更新');
+}
+function closeSubtitleModal() {
+  document.getElementById('subtitle-modal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+// EXPORT MENU
+// ═══════════════════════════════════════════
+function toggleExportMenu() {
+  document.getElementById('export-menu').classList.toggle('open');
+}
+document.addEventListener('click', function(e) {
+  const wrap = document.querySelector('.export-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    document.getElementById('export-menu').classList.remove('open');
+  }
+});
+
+// ═══════════════════════════════════════════
+// SAVE HTML
+// ═══════════════════════════════════════════
+function saveHTML() {
+  document.getElementById('export-menu').classList.remove('open');
+  const dataStr = JSON.stringify(data);
+  const currentHTML = document.documentElement.outerHTML;
+  const exported = currentHTML.replace(
+    /let data = \{[\s\S]*?\};\s*\/\/ ═{3}/,
+    `let data = ${dataStr};\n\n// ═══`
+  );
+  const blob = new Blob([exported], { type: 'text/html;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  // Use trip title for filename
+  const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
+  a.download = `${safeName}行程.html`;
+  a.click();
+  showToast('💾 HTML 已儲存！');
+}
+
+// ═══════════════════════════════════════════
+// IMAGE EXPORT
+// ═══════════════════════════════════════════
+function openImgExport() {
+  document.getElementById('export-menu').classList.remove('open');
+  const list = document.getElementById('img-day-list');
+  list.innerHTML = '';
+  data.days.forEach((day, di) => {
+    const btn = document.createElement('button');
+    btn.className = 'img-day-item';
+    btn.innerHTML = `
+      <div class="img-day-item-inner">
+        <div class="iday-label">🗓 ${day.label}</div>
+        <div class="iday-stops">${day.theme} · ${day.stops.length} 個景點</div>
+      </div>
+      <span style="font-size:1.2rem">⬇️</span>
+    `;
+    btn.onclick = () => exportDayImg(di);
+    list.appendChild(btn);
+  });
+  document.getElementById('img-export-modal').classList.add('open');
+}
+function closeImgExport() {
+  document.getElementById('img-export-modal').classList.remove('open');
+}
+
+function buildCaptureHTML(di) {
+  const day = data.days[di];
+  let stopsHTML = '';
+  day.stops.forEach((stop, si) => {
+    const isLast = si === day.stops.length - 1;
+    const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+
+    let arriveTag = '';
+    if (si > 0) {
+      const prevStop = day.stops[si - 1];
+      const drive = day.drives[si - 1] || 0;
+      const arrMins = timeToMinutes(prevStop.depart) + drive;
+      arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
+    }
+    const leaveTag = !isLast
+      ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
+      : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
+    stopsHTML += `
+      <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
+        <div class="cap-left">
+          <div class="cap-num">${si + 1}</div>
+          <div class="cap-line"></div>
+        </div>
+        <div class="cap-content">
+          <div class="cap-name">${stop.name}</div>
+          <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
+        </div>
+      </div>
+    `;
+    if (!isLast) {
+      stopsHTML += `
+        <div class="cap-transit">
+          <span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span>
+        </div>
+      `;
+    }
+  });
+
+  const card = document.createElement('div');
+  card.className = 'capture-card';
+  card.style.position = 'fixed';
+  card.style.left = '-9999px';
+  card.style.top = '0';
+  card.style.width = '680px';
+  card.innerHTML = `
+    <div class="capture-header">
+      <span class="ch-emoji">🏝</span>
+      <div class="ch-title">${data.title.replace(/^[\p{Emoji}\s]+/u,'')}</div>
+      <div class="ch-sub">${data.subtitle}</div>
+      <div class="ch-day">🗓 ${day.label} · ${day.theme}</div>
+    </div>
+    <div class="capture-body">
+      ${stopsHTML}
+    </div>
+    <div class="capture-footer">由互動行程產生 · ${data.title}</div>
+  `;
+  return card;
+}
+
+async function exportDayImg(di) {
+  closeImgExport();
+  showProgress(`正在產生 Day ${di + 1} 圖片…`, 30);
+
+  await new Promise(r => setTimeout(r, 100));
+  const card = buildCaptureHTML(di);
+  document.body.appendChild(card);
+
+  try {
+    showProgress(`正在渲染…`, 60);
+    await new Promise(r => setTimeout(r, 200));
+    const canvas = await html2canvas(card, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: 680,
+      logging: false
+    });
+    showProgress(`正在下載…`, 90);
+    const a = document.createElement('a');
+    const dayNum = di + 1;
+    const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
+    a.download = `${safeName}_Day${dayNum}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    hideProgress();
+    showToast(`🖼️ Day ${dayNum} 圖片已下載！`);
+  } catch(e) {
+    hideProgress();
+    showToast('⚠️ 圖片產生失敗，請重試');
+  } finally {
+    document.body.removeChild(card);
+  }
+}
+
+async function exportAllDaysImg() {
+  closeImgExport();
+  const total = data.days.length;
+  for (let di = 0; di < total; di++) {
+    showProgress(`正在產生 Day ${di + 1} / ${total} 圖片…`, Math.round((di / total) * 100));
+    await new Promise(r => setTimeout(r, 150));
+    const card = buildCaptureHTML(di);
+    document.body.appendChild(card);
+    try {
+      await new Promise(r => setTimeout(r, 200));
+      const canvas = await html2canvas(card, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: 680,
+        logging: false
+      });
+      const a = document.createElement('a');
+      const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
+      a.download = `${safeName}_Day${di + 1}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      await new Promise(r => setTimeout(r, 600));
+    } catch(e) {
+      console.error(e);
+    } finally {
+      document.body.removeChild(card);
+    }
+  }
+  hideProgress();
+  showToast(`✅ 全部 ${total} 天圖片已下載！`);
+}
+
+// ═══════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════
+async function exportPDF() {
+  document.getElementById('export-menu').classList.remove('open');
+  showProgress('正在準備列印…', 30);
+  await new Promise(r => setTimeout(r, 200));
+  hideProgress();
+
+  // Build a print-friendly page with all days
+  const printHTML = buildPrintHTML();
+  const printWin = window.open('', '_blank', 'width=800,height=900');
+  printWin.document.write(printHTML);
+  printWin.document.close();
+  printWin.onload = () => {
+    setTimeout(() => {
+      printWin.focus();
+      printWin.print();
+    }, 500);
+  };
+  showToast('📄 列印視窗已開啟，選擇「儲存為 PDF」');
+}
+
+function buildPrintHTML() {
+  let daysHTML = '';
+  data.days.forEach((day, di) => {
+    let stopsHTML = '';
+    day.stops.forEach((stop, si) => {
+      const isLast = si === day.stops.length - 1;
+      const noteTag = stop.note ? `<span class="tag tag-note">${stop.note}</span>` : '';
+      let arriveTag = '';
+      if (si > 0) {
+        const prevStop = day.stops[si - 1];
+        const drive = day.drives[si - 1] || 0;
+        const arrMins = timeToMinutes(prevStop.depart) + drive;
+        arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
+      }
+      const leaveTag = !isLast
+        ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
+        : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
+      stopsHTML += `
+        <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
+          <div class="cap-left">
+            <div class="cap-num">${si + 1}</div>
+            <div class="cap-line"></div>
+          </div>
+          <div class="cap-content">
+            <div class="cap-name">${stop.name}</div>
+            <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
+          </div>
+        </div>
+        ${!isLast ? `<div class="cap-transit"><span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span></div>` : ''}
+      `;
+    });
+    daysHTML += `
+      <div class="print-day-card" ${di < data.days.length - 1 ? '' : ''}>
+        <div class="capture-header" style="border-radius:12px 12px 0 0">
+          <div class="ch-day" style="margin:0;font-size:1rem">🗓 ${day.label} · ${day.theme}</div>
+        </div>
+        <div class="capture-body">${stopsHTML}</div>
+      </div>
+    `;
+  });
+
+  return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>${data.title} · 行程</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&family=Noto+Sans+TC:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ocean: #1a6b8a; --sky: #5aa8c8; --sky-light: #a8d4e8; --sand: #f5ede0;
+  --coral: #e07a5f; --dark: #1c2b35; --mid: #4a6274; --light: #eaf4f8;
+  --white: #fff; --border: #cce0ea; --green: #2d9e6b; --green-bg: #d8f0e4;
+  --amber: #8a6200; --amber-bg: #fef3cd; --amber-light: #b07c20; --amber-light-bg: #fff8e6;
+  --red: #9b3020; --red-bg: #fce4e0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans TC', sans-serif; color: var(--dark); background: white; }
+.print-header { background: linear-gradient(135deg, var(--ocean), var(--sky)); color: white; padding: 32px; text-align: center; margin-bottom: 24px; }
+.print-header h1 { font-family: 'Noto Serif TC', serif; font-size: 1.8rem; letter-spacing: 0.1em; }
+.print-header p { font-size: 0.9rem; opacity: 0.85; margin-top: 6px; }
+.print-day-card { margin: 0 16px 20px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; page-break-inside: avoid; }
+.capture-header { background: linear-gradient(90deg, var(--ocean), var(--sky)); color: white; padding: 14px 20px; }
+.ch-day { font-family: 'Noto Serif TC', serif; font-size: 0.95rem; font-weight: 600; }
+.capture-body { padding: 12px 20px 16px; background: white; }
+.capture-stop-row { display: flex; align-items: stretch; }
+.cap-left { display: flex; flex-direction: column; align-items: center; width: 30px; flex-shrink: 0; margin-right: 12px; }
+.cap-num { width: 24px; height: 24px; border-radius: 50%; background: var(--ocean); color: white; font-size: 0.68rem; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 12px; }
+.cap-line { width: 2px; background: var(--border); flex: 1; margin-top: 4px; }
+.cap-last .cap-line { display: none; }
+.cap-content { flex: 1; padding: 10px 0 8px; border-bottom: 1px solid #f5f5f5; }
+.cap-last .cap-content { border-bottom: none; }
+.cap-name { font-family: 'Noto Serif TC', serif; font-size: 0.9rem; font-weight: 600; }
+.cap-tags { display: flex; gap: 5px; margin-top: 4px; flex-wrap: wrap; }
+.tag { font-size: 0.68rem; padding: 2px 7px; border-radius: 8px; }
+.tag-depart { background: var(--amber-bg); color: var(--amber); }
+.tag-arrive { background: var(--amber-bg); color: var(--amber); }
+.tag-leave  { background: #fff8e6; color: #b07c20; }
+.tag-stay { background: var(--green-bg); color: var(--green); }
+.tag-note { background: var(--red-bg); color: var(--red); }
+.cap-transit { padding: 3px 0 3px 42px; }
+.cap-transit-text { font-size: 0.7rem; color: var(--sky); background: var(--light); padding: 2px 7px; border-radius: 6px; }
+.print-footer { text-align: center; font-size: 0.72rem; color: var(--mid); padding: 16px; margin-top: 8px; }
+@media print {
+  body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .print-day-card { page-break-inside: avoid; margin: 0 0 16px; }
+  @page { margin: 15mm; size: A4; }
+}
+</style>
+</head>
+<body>
+<div class="print-header">
+  <h1>${data.title}</h1>
+  <p>${data.subtitle}</p>
+</div>
+${daysHTML}
+<div class="print-footer">由互動行程產生 · 請在列印對話框選擇「另存為 PDF」</div>
+</body></html>`;
+}
+
+// ═══════════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════════
+function showProgress(msg, pct) {
+  document.getElementById('progress-text').textContent = msg;
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-overlay').classList.add('open');
+}
+function hideProgress() {
+  document.getElementById('progress-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+// PAGE NAV
+// ═══════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  const btns = document.querySelectorAll('.nav-btn');
+  if (name === 'itinerary') btns[0].classList.add('active');
+  else if (name === 'map') { renderMap(); }
+}
+
+// ═══════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════
+// MODAL CLOSE ON OVERLAY CLICK
+// ═══════════════════════════════════════════
+['stop-modal','transit-modal','title-modal','subtitle-modal','day-modal','img-export-modal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderAll();
+</script>
+</body>
+</html>
