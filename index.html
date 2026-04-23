@@ -2465,7 +2465,6 @@ function resetToDefault() {
 function exportHTML() {
   document.getElementById('export-menu').classList.remove('open');
   const dataStr = JSON.stringify(JSON.parse(JSON.stringify(data)));
-  const newStorageKey = `itinerary_${Date.now()}`;
 
   // 取得 inline style
   const styleEl = document.getElementById('main-style');
@@ -2482,12 +2481,193 @@ function exportHTML() {
 
   // 以 placeholder 精準替換，避免正則誤匹配行程內容
   const DATA_PLACEHOLDER  = '__EXPORT_DATA_PLACEHOLDER__';
-  const KEY_PLACEHOLDER   = '__EXPORT_KEY_PLACEHOLDER__';
+  // 使用固定 STORAGE_KEY，確保匯出後的 HTML 能正確運作
   jsText = jsText.replace(/^const DEFAULT_DATA = .*$/m,  `const DEFAULT_DATA = ${DATA_PLACEHOLDER};`);
-  jsText = jsText.replace(/^const STORAGE_KEY = .*$/m,   `const STORAGE_KEY = '${KEY_PLACEHOLDER}';`);
+  jsText = jsText.replace(/^const STORAGE_KEY = .*$/m,   `const STORAGE_KEY = 'itinerary_data';`);
   // 再以字串替換（不走正則，安全處理任意 JSON 字元）
   jsText = jsText.replace(DATA_PLACEHOLDER, dataStr);
-  jsText = jsText.replace(KEY_PLACEHOLDER,  newStorageKey);
+
+  // 使用乾淨的靜態 HTML 骨架，不 dump 動態 DOM，避免重複渲染問題
+  const STATIC_BODY = `<!-- NAV -->
+<nav class="nav">
+  <span class="nav-title" onclick="editTripTitle()" title="點擊編輯旅遊名稱">
+    <span id="nav-title-text">🏝 澎湖三日遊</span>
+    <span class="nav-title-edit-icon">✏️</span>
+  </span>
+  <button class="nav-btn active" onclick="showPage('itinerary')" aria-label="行程頁">📋 行程</button>
+  <button class="nav-btn" onclick="showPage('map')" aria-label="地圖頁">🗺 地圖</button>
+  <div class="export-wrap">
+    <button class="nav-export" onclick="toggleExportMenu()" aria-haspopup="true" aria-expanded="false" id="export-trigger">⬇ 匯出 ▾</button>
+    <div class="export-menu" id="export-menu">
+      <button class="export-menu-item" onclick="saveData()">
+        <span class="em-icon">💾</span>
+        <div><div>儲存行程</div><div style="font-size:0.72rem;color:var(--mid)">存至本機瀏覽器</div></div>
+      </button>
+      <button class="export-menu-item" onclick="exportHTML()">
+        <span class="em-icon">📁</span>
+        <div><div>匯出 HTML</div><div style="font-size:0.72rem;color:var(--mid)">下載 index.html</div></div>
+      </button>
+      <div class="export-menu-sep"></div>
+      <button class="export-menu-item" onclick="exportJSON()">
+        <span class="em-icon">📋</span>
+        <div><div>匯出 JSON</div><div style="font-size:0.72rem;color:var(--mid)">分享行程給他人匯入</div></div>
+      </button>
+      <button class="export-menu-item" onclick="importJSON()">
+        <span class="em-icon">📥</span>
+        <div><div>匯入 JSON</div><div style="font-size:0.72rem;color:var(--mid)">載入他人分享的行程</div></div>
+      </button>
+      <div class="export-menu-sep"></div>
+      <button class="export-menu-item" onclick="openImgExport()">
+        <span class="em-icon">🖼️</span>
+        <div><div>匯出圖片</div><div style="font-size:0.72rem;color:var(--mid)">按天下載 PNG</div></div>
+      </button>
+      <button class="export-menu-item" onclick="exportPDF()">
+        <span class="em-icon">📄</span>
+        <div><div>匯出 PDF</div><div style="font-size:0.72rem;color:var(--mid)">全部行程一份</div></div>
+      </button>
+      <div class="export-menu-sep"></div>
+      <button class="export-menu-item" onclick="resetToDefault()">
+        <span class="em-icon">🔄</span>
+        <div><div>切換回預設行程</div><div style="font-size:0.72rem;color:var(--mid)">還原 HTML 內建行程</div></div>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ITINERARY PAGE -->
+<div id="page-itinerary" class="page active">
+  <div class="header">
+    <h1 id="header-title" onclick="editTripTitle()">🏝 澎湖三日遊 <span style="font-size:0.8rem;color:var(--sky);font-weight:400">✏️</span></h1>
+    <p class="subtitle" id="trip-subtitle" onclick="editSubtitle()">4/26（五）— 4/28（日）· 鎖港郵局會館 <span style="font-size:0.75rem">✏️</span></p>
+    <br>
+    <span class="edit-hint">✏️ 點擊任意景點、車程、天數標題可直接編輯</span>
+  </div>
+  <div id="days-container"></div>
+  <div style="display:flex;gap:8px;padding:0 16px 16px;">
+    <button class="add-day-btn" onclick="addDay()" aria-label="新增天數">＋ 新增天數</button>
+    <button class="add-day-btn" onclick="undo()" aria-label="復原上一步" style="background:var(--mid);color:white;flex:0 0 auto;" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
+  </div>
+</div>
+
+<!-- MAP PAGE -->
+<div id="page-map" class="page">
+  <div class="map-page-header">
+    <h2>🗺 互動地圖</h2>
+    <p>點擊景點可編輯，拖曳地圖縮放</p>
+  </div>
+  <div class="map-day-tabs" id="map-tabs"></div>
+  <div id="leaflet-map"></div>
+  <div class="map-stop-list" id="map-stop-list"></div>
+  <div id="map-nav-btn-wrap"></div>
+</div>
+
+<!-- Stop Edit Modal -->
+<div class="modal-overlay" id="stop-modal" role="dialog" aria-modal="true" aria-label="編輯景點">
+  <div class="modal">
+    <h3>✏️ 編輯景點</h3>
+    <label>景點名稱</label>
+    <input type="text" id="edit-name" placeholder="景點名稱">
+    <label>備註（可選）</label>
+    <input type="text" id="edit-note" placeholder="如：大菓葉・鯨魚洞">
+    <label>📍 Google 座標（可選）</label>
+    <input type="text" id="edit-coords" placeholder="從 Google Maps 右鍵複製，如：23.5712, 119.5634">
+    <p id="coords-hint" style="font-size:0.72rem;margin-top:4px;min-height:1.1em"></p>
+    <div class="modal-row">
+      <div>
+        <label>離開時間</label>
+        <input type="time" id="edit-depart" oninput="onDepartChange()">
+      </div>
+      <div>
+        <label>停留（分鐘）</label>
+        <input type="number" id="edit-stay" min="0" max="600" step="5" placeholder="分鐘" oninput="onStayChange()">
+      </div>
+    </div>
+    <p id="modal-arrival-hint" style="font-size:0.74rem;color:var(--mid);margin-top:6px;min-height:1.2em"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-save" onclick="saveStop()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Transit Edit Modal -->
+<div class="modal-overlay transit-modal" id="transit-modal" role="dialog" aria-modal="true" aria-label="編輯車程">
+  <div class="modal">
+    <h3>🚗 編輯車程</h3>
+    <label>車程時間（分鐘）</label>
+    <input type="number" id="edit-drive" min="1" max="360" step="1" placeholder="分鐘">
+    <p style="font-size:0.75rem;color:var(--mid);margin-top:8px;">修改後，後續景點的出發時間將自動重新計算</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTransitModal()">取消</button>
+      <button class="btn-save" onclick="saveDrive()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Trip Title Edit Modal -->
+<div class="modal-overlay" id="title-modal" role="dialog" aria-modal="true" aria-label="編輯旅遊名稱">
+  <div class="modal">
+    <h3>✏️ 編輯旅遊名稱</h3>
+    <label>旅遊名稱（含 emoji）</label>
+    <input type="text" id="edit-trip-title" placeholder="🏝 澎湖三日遊">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeTitleModal()">取消</button>
+      <button class="btn-save" onclick="saveTripTitle()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subtitle Edit Modal -->
+<div class="modal-overlay" id="subtitle-modal" role="dialog" aria-modal="true" aria-label="編輯副標題">
+  <div class="modal">
+    <h3>✏️ 編輯副標題</h3>
+    <label>日期與住宿資訊</label>
+    <input type="text" id="edit-subtitle" placeholder="4/26（五）— 4/28（日）· 鎖港郵局會館">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSubtitleModal()">取消</button>
+      <button class="btn-save" onclick="saveSubtitle()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Day Edit Modal -->
+<div class="modal-overlay" id="day-modal" role="dialog" aria-modal="true" aria-label="編輯天數資訊">
+  <div class="modal">
+    <h3>✏️ 編輯天數資訊</h3>
+    <label>天數標籤（如：Day 1 · 4/26（五））</label>
+    <input type="text" id="edit-day-label" placeholder="Day 1 · 4/26（五）">
+    <label>主題（如：抵達 · 夜遊市區）</label>
+    <input type="text" id="edit-day-theme" placeholder="抵達 · 夜遊市區">
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeDayModal()">取消</button>
+      <button class="btn-save" onclick="saveDayInfo()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Export Modal -->
+<div class="modal-overlay img-export-modal" id="img-export-modal" role="dialog" aria-modal="true" aria-label="匯出圖片">
+  <div class="modal">
+    <h3>🖼️ 匯出圖片</h3>
+    <p style="font-size:0.8rem;color:var(--mid);margin-bottom:12px;">選擇要匯出的天數，每天產出一張 PNG 圖片，方便分享到 LINE 群組。</p>
+    <div class="img-day-list" id="img-day-list"></div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn-cancel" onclick="closeImgExport()">關閉</button>
+      <button class="btn-save" onclick="exportAllDaysImg()">📥 全部下載</button>
+    </div>
+  </div>
+</div>
+
+<!-- Progress overlay -->
+<div class="progress-overlay" id="progress-overlay">
+  <div class="progress-text" id="progress-text">正在產生圖片…</div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>`;
 
   const fullHTML = `<!DOCTYPE html>
 <html lang="zh-TW">
@@ -2505,7 +2685,7 @@ ${cssText}
 </style>
 </head>
 <body>
-${document.body.innerHTML.replace(/<script id="main-script">[\s\S]*?<\/script>/i, '')}
+${STATIC_BODY}
 <script id="main-script">
 ${jsText}
 <\/script>
