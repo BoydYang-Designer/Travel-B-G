@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style id="main-style">
 
+
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -1218,6 +1219,7 @@ body {
 }
 
 
+
 </style>
 </head>
 <body>
@@ -1414,10 +1416,11 @@ body {
 <div class="toast" id="toast"></div>
 <script id="main-script">
 
+
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:10","stay":0,"note":"","coords":{"lat":23.561020574753133,"lng":119.62948594417897}},{"name":"🏨 鎖港郵局會館","depart":"18:50","stay":20,"note":"","coords":{"lat":23.525358046101026,"lng":119.59696644417897}},{"name":"🍽 新村美食館","depart":"20:30","stay":90,"note":"","coords":{"lat":23.57048805880574,"lng":119.56947418650736}},{"name":"🛍 市區中正路商圈","depart":"21:15","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614}},{"name":"🏨 鎖港郵局會館","depart":"21:35","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421}}],"drives":[20,10,5,20],"modes":["drive","drive","drive","drive"]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:00","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖水族館","depart":"10:40","stay":75,"note":"","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"09:25"},{"name":"摩西分海","depart":"12:40","stay":90,"note":"","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:10"},{"name":"池東大菓葉玄武岩","depart":"14:55","stay":95,"note":"大菓葉・鯨魚洞","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"13:20"},{"name":"🏨 鎖港郵局會館","depart":"17:00","stay":90,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"15:30"},{"name":"觀音亭親水遊憩區","depart":"20:30","stay":200,"note":"","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"17:10"}],"drives":[25,30,40,35,10,20],"modes":["drive","drive","drive","drive","drive","drive"]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖縣南海立體停車場","depart":"10:30","stay":60,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"🏛 舊郵便局（澎湖水下文化遺產博物館）","depart":"12:50","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476}},{"name":"✈️ 澎湖機場","depart":"12:55","stay":0,"note":"班機 15:30"}],"drives":[15,15,5],"modes":["drive","drive","drive"]}]};
+const DEFAULT_DATA = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:10","stay":0,"note":"","coords":{"lat":23.561020574753133,"lng":119.62948594417897}},{"name":"🏨 鎖港郵局會館","depart":"18:45","stay":20,"note":"","coords":{"lat":23.525358046101026,"lng":119.59696644417897},"arrive":"18:25"},{"name":"🍽 新村美食館","depart":"20:35","stay":90,"note":"","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"19:05"},{"name":"🛍 市區中正路商圈","depart":"21:25","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614},"arrive":"20:40"},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:45"}],"drives":[15,20,5,20],"modes":["drive","drive","walk","drive"]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:00","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖水族館","depart":"10:45","stay":75,"note":"","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"09:30"},{"name":"摩西分海","depart":"12:45","stay":90,"note":"","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:15"},{"name":"池東大菓葉玄武岩","depart":"15:05","stay":95,"note":"大菓葉・鯨魚洞","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"13:30"},{"name":"🏨 鎖港郵局會館","depart":"17:20","stay":90,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"15:50"},{"name":"額外看煙火行程-觀音亭親水遊憩區","depart":"20:50","stay":200,"note":"","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"17:30"}],"drives":[30,30,45,45,10,20]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"","coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"澎湖縣南海立體停車場","depart":"10:35","stay":60,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363},"arrive":"09:35"},{"name":"🏛 舊郵便局（澎湖水下文化遺產博物館）","depart":"12:55","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476},"arrive":"10:50"},{"name":"✈️ 澎湖機場","depart":"13:15","stay":0,"note":"班機 15:30","arrive":"13:15"}],"drives":[20,15,20],"modes":["drive","walk","drive"]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -1439,20 +1442,13 @@ function storageRemove(key) {
 // LOAD / SAVE
 // ═══════════════════════════════════════════
 function loadData() {
-  let d;
   try {
     const saved = storageGet(STORAGE_KEY);
-    if (saved) d = JSON.parse(saved);
+    if (saved) return JSON.parse(saved);
   } catch (e) {
     console.warn('無法讀取儲存，使用預設資料', e);
   }
-  if (!d) d = JSON.parse(JSON.stringify(DEFAULT_DATA));
-  // 向後相容：補齊每天的 modes 陣列
-  d.days.forEach(day => {
-    if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
-    while (day.modes.length < day.drives.length) day.modes.push('drive');
-  });
-  return d;
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
 }
 
 function saveData() {
@@ -2592,11 +2588,6 @@ document.addEventListener('click', function(e) {
 // ═══════════════════════════════════════════
 function exportJSON() {
   document.getElementById('export-menu').classList.remove('open');
-  // 匯出前先正規化：確保每天都有完整的 modes 陣列
-  data.days.forEach(day => {
-    if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
-    while (day.modes.length < day.drives.length) day.modes.push('drive');
-  });
   const exportObj = JSON.parse(JSON.stringify(data));
   const blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json;charset=utf-8' });
   const a = document.createElement('a');
@@ -2638,11 +2629,6 @@ function importJSON() {
           showToast('⚠️ JSON 格式不正確或缺少必要欄位');
           return;
         }
-        // 向後相容：補齊 modes
-        parsed.days.forEach(day => {
-          if (!day.modes) day.modes = new Array(day.drives.length).fill('drive');
-          while (day.modes.length < day.drives.length) day.modes.push('drive');
-        });
         data = parsed;
         storageSet(STORAGE_KEY, JSON.stringify(data));
         renderAll();
@@ -3229,6 +3215,7 @@ document.addEventListener('keydown', function(e) {
 // INIT
 // ═══════════════════════════════════════════
 renderAll();
+
 
 </script>
 </body>
