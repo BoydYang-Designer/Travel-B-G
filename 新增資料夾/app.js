@@ -318,6 +318,7 @@ function renderMap() {
 
 // 更新地圖上的標記與路線
 async function refreshMapMarkers() {
+  // 清除舊標記
   mapMarkers.forEach(m => leafletMap.removeLayer(m));
   mapMarkers = [];
   if (mapPolyline) { leafletMap.removeLayer(mapPolyline); mapPolyline = null; }
@@ -326,59 +327,38 @@ async function refreshMapMarkers() {
   const stops = day.stops;
   const coords = [];
 
+  // 取得所有座標（用 cache，沒有就排 queue）
   const promises = stops.map(s => geocode(s.name, s));
-
+  // 逐步顯示已解析的點（不等全部完成）
   for (let i = 0; i < stops.length; i++) {
     promises[i].then(coord => {
       if (!coord) {
+        // 更新清單中的 badge
         const badge = document.querySelector(`[data-map-badge="${i}"]`);
         if (badge) { badge.textContent = '找不到位置'; badge.className = 'map-geocode-badge fail'; }
         const letter = document.querySelector(`[data-map-letter="${i}"]`);
         if (letter) letter.classList.add('geocode-fail');
         return;
       }
+      // 移除 loading badge
       const badge = document.querySelector(`[data-map-badge="${i}"]`);
       if (badge) badge.remove();
 
-      coords[i] = [coord.lat, coord.lng];
-
-      // 找出與此座標相同的其他景點（距離 < ~50m）
-      const sameIdxs = [i];
-      for (let j = 0; j < stops.length; j++) {
-        if (j === i || !coords[j]) continue;
-        if (Math.abs(coords[j][0] - coord.lat) < 0.0005 &&
-            Math.abs(coords[j][1] - coord.lng) < 0.0005) {
-          sameIdxs.push(j);
-        }
-      }
-
-      // 移除舊的同位置標記，重建合併標記
-      sameIdxs.forEach(idx => {
-        const old = mapMarkers.find(m => m._stopIdx === idx);
-        if (old) { leafletMap.removeLayer(old); mapMarkers = mapMarkers.filter(m => m !== old); }
-      });
-
-      // 標籤：同位置用 "A/E" 格式
-      const letters = [...new Set(sameIdxs)].sort((a,b)=>a-b).map(idx => stopLetter(idx));
-      const isMulti = letters.length > 1;
-      const labelHTML = `<div class="map-label-marker${isMulti ? ' multi' : ''}">${letters.join('/')}</div>`;
-      const popupLines = [...new Set(sameIdxs)].sort((a,b)=>a-b)
-        .map(idx => `<b>${stopLetter(idx)}. ${stops[idx].name}</b><br><span style="font-size:0.8em">${stops[idx].depart}</span>`)
-        .join('<hr style="margin:4px 0">');
-
+      // 建立自訂標記
       const icon = L.divIcon({
         className: '',
-        html: labelHTML,
+        html: `<div class="map-label-marker">${stopLetter(i)}</div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 14],
         popupAnchor: [0, -14],
       });
       const marker = L.marker([coord.lat, coord.lng], { icon })
-        .bindPopup(popupLines)
+        .bindPopup(`<b>${stops[i].name}</b><br>${stops[i].depart}`)
         .addTo(leafletMap);
-      marker._stopIdx = i;
       mapMarkers.push(marker);
 
+      // 累積座標，夠多時畫路線
+      coords[i] = [coord.lat, coord.lng];
       drawPolylineIfReady(coords, stops.length);
     });
   }
@@ -1069,9 +1049,10 @@ ${jsText}
   const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'index.html';
+  const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu, '').replace(/[^\w\u4e00-\u9fff]/g, '') || '旅遊行程';
+  a.download = `${safeName}行程.html`;
   a.click();
-  showToast('💾 index.html 已下載（含完整行程）！');
+  showToast('💾 HTML 已下載（含完整行程）！');
 }
 
 function _downloadHTML(htmlContent, dataStr) {
@@ -1217,57 +1198,20 @@ async function exportAllDaysImg() {
 // ═══════════════════════════════════════════
 async function exportPDF() {
   document.getElementById('export-menu').classList.remove('open');
-  showProgress('正在截取地圖…', 20);
-  await new Promise(r => setTimeout(r, 200));
-
-  // 逐天截取地圖圖片（切換 tab → 等渲染 → 截圖）
-  const mapImgsByDay = {};
-  const wasOnMap = document.getElementById('page-map').classList.contains('active');
-  const prevDay = currentMapDay;
-
-  // 確保地圖頁可見才能截圖
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-map').classList.add('active');
-  if (!leafletMap) { renderMap(); await new Promise(r => setTimeout(r, 800)); }
-  else { leafletMap.invalidateSize(); }
-
-  for (let di = 0; di < data.days.length; di++) {
-    showProgress(`截取 Day ${di+1} 地圖…`, 20 + Math.round((di / data.days.length) * 40));
-    currentMapDay = di;
-    renderMap();
-    await new Promise(r => setTimeout(r, 900)); // 等地圖磁磚載入
-    try {
-      const mapEl = document.getElementById('leaflet-map');
-      const canvas = await html2canvas(mapEl, { useCORS: true, scale: 1.5, logging: false });
-      mapImgsByDay[di] = canvas.toDataURL('image/png');
-    } catch(e) {
-      console.warn('地圖截圖失敗 Day', di, e);
-    }
-  }
-
-  // 還原頁面狀態
-  currentMapDay = prevDay;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(wasOnMap ? 'page-map' : 'page-itinerary').classList.add('active');
-  renderMap();
-
-  showProgress('正在準備列印…', 70);
+  showProgress('正在準備列印…', 30);
   await new Promise(r => setTimeout(r, 200));
   hideProgress();
-
-  const printHTML = buildPrintHTML(mapImgsByDay);
+  const printHTML = buildPrintHTML();
   const printWin = window.open('', '_blank', 'width=800,height=900');
-  if (!printWin) { showToast('⚠️ 請允許彈出視窗'); return; }
   printWin.document.write(printHTML);
   printWin.document.close();
   printWin.onload = () => {
-    setTimeout(() => { printWin.focus(); printWin.print(); }, 600);
+    setTimeout(() => { printWin.focus(); printWin.print(); }, 500);
   };
   showToast('📄 列印視窗已開啟，選擇「儲存為 PDF」');
 }
 
-function buildPrintHTML(mapImgsByDay) {
-  mapImgsByDay = mapImgsByDay || {};
+function buildPrintHTML() {
   let daysHTML = '';
   data.days.forEach((day, di) => {
     let stopsHTML = '';
@@ -1295,19 +1239,12 @@ function buildPrintHTML(mapImgsByDay) {
         ${!isLast ? `<div class="cap-transit"><span class="cap-transit-text">🚗 約 ${day.drives[si]} 分鐘</span></div>` : ''}
       `;
     });
-    const mapImg = mapImgsByDay[di]
-      ? `<div style="padding:12px 20px 16px;background:#f5f9fb;border-top:1px solid #cce0ea;">
-           <div style="font-size:0.75rem;color:#4a6274;margin-bottom:6px;font-weight:600;">🗺 路線地圖</div>
-           <img src="${mapImgsByDay[di]}" style="width:100%;border-radius:10px;border:1px solid #cce0ea;" />
-         </div>`
-      : '';
     daysHTML += `
       <div class="print-day-card">
         <div class="capture-header" style="border-radius:12px 12px 0 0">
           <div class="ch-day" style="margin:0;font-size:1rem">🗓 ${day.label} · ${day.theme}</div>
         </div>
         <div class="capture-body">${stopsHTML}</div>
-        ${mapImg}
       </div>
     `;
   });

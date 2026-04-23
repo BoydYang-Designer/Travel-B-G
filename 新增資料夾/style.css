@@ -622,14 +622,6 @@ body {
 .map-label-marker.geocode-fail {
   background: #999;
 }
-.map-label-marker.multi {
-  background: var(--coral, #e07a5f);
-  font-size: 0.55rem;
-  letter-spacing: -0.5px;
-  border-radius: 14px;
-  width: 36px;
-  padding: 0 4px;
-}
 
 /* ── MAP STOP LIST (Inline Edit) ── */
 .map-stop-list {
