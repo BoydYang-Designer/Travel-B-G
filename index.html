@@ -429,6 +429,42 @@ body {
 }
 .transit-mode-toggle:hover { background: var(--light); border-color: var(--sky); color: var(--ocean); }
 .transit-line-bot { width: 2px; flex: 1; min-height: 6px; background: var(--border); }
+.transit-icon-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.transit-dur-below {
+  font-size: 0.65rem;
+  color: var(--ocean);
+  background: var(--light);
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s;
+}
+.transit-dur-below:hover { background: #d0eaf5; border-color: var(--sky); }
+.transit-icon-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.transit-dur-below {
+  font-size: 0.65rem;
+  color: var(--ocean);
+  background: var(--light);
+  padding: 2px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.2s;
+}
+.transit-dur-below:hover { background: #d0eaf5; border-color: var(--sky); }
 .transit-info {
   font-size: 0.74rem;
   color: var(--mid);
@@ -1951,6 +1987,30 @@ function renderStops(di) {
     const stayTag = stayLabel(stop.stay)
       ? `<span class="tag tag-stay">${stayLabel(stop.stay)}</span>` : '';
 
+    // 若非第一個景點，先渲染前一段的交通列（在此景點之前）
+    if (si > 0) {
+      const tr = document.createElement('div');
+      tr.className = 'transit-row';
+      const mode = (day.modes && day.modes[si - 1]) || 'drive';
+      const isWalk = mode === 'walk';
+      const modeIcon = isWalk ? '🚶' : '🚗';
+      const modeLabel = isWalk ? '步行' : '車程';
+      tr.innerHTML = `
+        <div class="transit-left">
+          <div class="transit-line-top"></div>
+          <div class="transit-icon-col">
+            <div class="transit-icon-wrap${isWalk ? ' walk' : ''}" onclick="quickToggleMode(${di},${si - 1})" title="點擊切換交通方式" style="cursor:pointer;">${modeIcon}</div>
+            <div class="transit-dur-below" onclick="editDrive(${di},${si - 1})" title="點擊編輯${modeLabel}">約 ${day.drives[si - 1]} 分鐘</div>
+          </div>
+          <div class="transit-line-bot"></div>
+        </div>
+        <div class="transit-info">
+          <a class="transit-nav-btn" href="${_buildSegGMapsURL(di, si - 1)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>
+        </div>
+      `;
+      container.appendChild(tr);
+    }
+
     row.innerHTML = `
       <div class="stop-left">
         <div class="stop-num">${si + 1}</div>
@@ -1968,28 +2028,6 @@ function renderStops(di) {
       <button class="stop-delete" onclick="deleteStop(${di},${si})" title="刪除">✕</button>
     `;
     container.appendChild(row);
-
-    if (!isLast) {
-      const tr = document.createElement('div');
-      tr.className = 'transit-row';
-      const mode = (day.modes && day.modes[si]) || 'drive';
-      const isWalk = mode === 'walk';
-      const modeIcon = isWalk ? '🚶' : '🚗';
-      const modeLabel = isWalk ? '步行' : '車程';
-      tr.innerHTML = `
-        <div class="transit-left">
-          <div class="transit-line-top"></div>
-          <div class="transit-icon-wrap${isWalk ? ' walk' : ''}">${modeIcon}</div>
-          <div class="transit-line-bot"></div>
-        </div>
-        <div class="transit-info">
-          <span class="transit-dur" onclick="editDrive(${di},${si})" title="點擊編輯${modeLabel}">約 ${day.drives[si]} 分鐘 ✏️</span>
-          <button class="transit-mode-toggle" onclick="quickToggleMode(${di},${si})" title="切換交通方式">${isWalk ? '🚗切換開車' : '🚶切換步行'}</button>
-          <a class="transit-nav-btn" href="${_buildSegGMapsURL(di, si)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>
-        </div>
-      `;
-      container.appendChild(tr);
-    }
   });
 }
 
@@ -3772,6 +3810,22 @@ async function exportPDF() {
       const leaveTag = !isLast
         ? `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fff8e6;color:#b07c20;">離開 ${stop.depart}</span>`
         : `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fef3cd;color:#8a6200;">抵達 ${stop.depart}</span>`;
+      // 先渲染交通列（在景點之前）
+      if (si > 0) {
+        const modeIcon = (day.modes&&day.modes[si-1])==='walk'?'🚶':'🚗';
+        stopsHTML += `
+          <div style="display:flex;align-items:stretch;">
+            <div style="display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;margin-right:12px;">
+              <div style="width:2px;background:#cce0ea;height:6px;"></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="width:20px;height:20px;border-radius:50%;background:#eaf4f8;border:1.5px dashed #5aa8c8;display:flex;align-items:center;justify-content:center;font-size:0.65rem;">${modeIcon}</div>
+                <div style="font-size:0.6rem;color:#1a6b8a;background:#eaf4f8;padding:1px 5px;border-radius:6px;white-space:nowrap;">約 ${day.drives[si-1]} 分鐘</div>
+              </div>
+              <div style="width:2px;background:#cce0ea;flex:1;min-height:6px;"></div>
+            </div>
+            <div style="flex:1;"></div>
+          </div>`;
+      }
       stopsHTML += `
         <div style="display:flex;align-items:stretch;margin-bottom:0;">
           <div style="display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;margin-right:12px;">
@@ -3782,8 +3836,7 @@ async function exportPDF() {
             <div style="font-family:\'Noto Serif TC\',serif;font-size:0.9rem;font-weight:600;color:#1c2b35;">${escHtml(stop.name)}</div>
             <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;">${arriveTag}${leaveTag}${noteTag}</div>
           </div>
-        </div>
-        ${!isLast ? `<div style="padding:3px 0 3px 42px;"><span style="font-size:0.7rem;color:#5aa8c8;background:#eaf4f8;padding:2px 7px;border-radius:6px;">${(day.modes&&day.modes[si])==='walk'?'🚶':'🚗'} 約 ${day.drives[si]} 分鐘</span></div>` : ''}`;
+        </div>`;
     });
 
     const dayEl = document.createElement('div');
@@ -3860,6 +3913,16 @@ function buildPrintHTML(mapImgsByDay) {
       const leaveTag = !isLast
         ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
         : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
+      if (si > 0) {
+        const modeIcon = (day.modes && day.modes[si-1]) === 'walk' ? '🚶' : '🚗';
+        stopsHTML += `
+          <div class="cap-transit">
+            <div class="cap-transit-icon-col">
+              <div class="cap-transit-icon">${modeIcon}</div>
+              <span class="cap-transit-text">約 ${day.drives[si-1]} 分鐘</span>
+            </div>
+          </div>`;
+      }
       stopsHTML += `
         <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
           <div class="cap-left"><div class="cap-num">${si + 1}</div><div class="cap-line"></div></div>
@@ -3868,7 +3931,6 @@ function buildPrintHTML(mapImgsByDay) {
             <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
           </div>
         </div>
-        ${!isLast ? `<div class="cap-transit"><span class="cap-transit-text">${(day.modes && day.modes[si]) === 'walk' ? '🚶' : '🚗'} 約 ${day.drives[si]} 分鐘</span></div>` : ''}
       `;
     });
     const mapImg = mapImgsByDay[di]
@@ -3909,8 +3971,10 @@ function buildPrintHTML(mapImgsByDay) {
 .cap-tags{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
 .tag{font-size:0.68rem;padding:2px 7px;border-radius:8px;}
 .tag-arrive{background:var(--amber-bg);color:var(--amber);}.tag-leave{background:#fff8e6;color:#b07c20;}.tag-note{background:var(--red-bg);color:var(--red);}
-.cap-transit{padding:3px 0 3px 42px;}
-.cap-transit-text{font-size:0.7rem;color:var(--sky);background:var(--light);padding:2px 7px;border-radius:6px;}
+.cap-transit{padding:2px 0;display:flex;align-items:stretch;}
+.cap-transit-icon-col{display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;margin-right:12px;gap:2px;padding:2px 0;}
+.cap-transit-icon{width:20px;height:20px;border-radius:50%;background:var(--light);border:1.5px dashed var(--sky);display:flex;align-items:center;justify-content:center;font-size:0.65rem;}
+.cap-transit-text{font-size:0.62rem;color:var(--ocean);background:var(--light);padding:1px 5px;border-radius:6px;white-space:nowrap;}
 @media print{body{print-color-adjust:exact;-webkit-print-color-adjust:exact;}.print-day-card{page-break-inside:avoid;margin:0 0 16px;}@page{margin:15mm;size:A4;}}
 </style></head><body>
 <div class="print-header"><h1>${data.title}</h1><p>${data.subtitle}</p></div>
