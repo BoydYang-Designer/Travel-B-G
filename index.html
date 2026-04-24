@@ -17,6 +17,7 @@
 
 
 
+
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -1739,6 +1740,7 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 
 
 
+
 </style>
 </head>
 <body>
@@ -1984,10 +1986,11 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 
 
 
+
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠開兩台車來機場接大家","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"晚餐- 新村美食館","depart":"20:35","stay":90,"note":"舅媽預定美食7:00","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"18:40","_departUserSet":true},{"name":"市區中正路商圈","depart":"21:25","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614},"arrive":"20:40","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:45","_departUserSet":true}],"drives":[20,5,20],"modes":["drive","walk","drive"]},{"label":"Day 2 · 4/27（一）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"10:10","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"摩西分海，找地方吃或是買7-11","depart":"12:30","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"10:30","_departUserSet":true},{"name":"澎湖水族館-門票300","depart":"16:00","stay":215,"note":"13:30 觸摸池  14:00礁岩池 15:00 餵食秀","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"12:55","_departUserSet":true},{"name":"池東大菓葉玄武岩","depart":"19:00","stay":155,"note":"西嶼吃晚餐","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"16:25","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"19:45","_departUserSet":true},{"name":"無人海灘看流星或觀音亭看煙火","depart":"01:00","stay":200,"note":"看天氣與壅擠程度再討論要去哪裡","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"21:10","_departUserSet":true}],"drives":[20,25,25,45,25],"modes":["drive","drive","drive","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"09:45","stay":10,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363},"arrive":"09:35","_departUserSet":true},{"name":"🏛 舊郵便局+街上買伴手禮","depart":"12:55","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476},"arrive":"10:00","_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"13:20","stay":10,"note":"","arrive":"13:10","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"澎湖六合租車-石泉店","depart":"14:00","stay":30,"note":"一台車去還車坐接駁車,另一車直接去機場","arrive":"13:30","_departUserSet":true,"coords":{"lat":23.561463705191535,"lng":119.5944892153432}},{"name":"✈️ 澎湖機場","depart":"14:10","stay":0,"note":"班機 15:30","arrive":"14:10"}],"drives":[20,15,15,10,10,15],"modes":["drive","walk","walk","drive","drive","drive"]}]};
+const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠開兩台車來機場接大家\n租車行電話:06-9221777","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"晚餐- 新村美食館","depart":"20:35","stay":90,"note":"舅媽預定美食7:00","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"18:40","_departUserSet":true},{"name":"市區中正路商圈","depart":"21:25","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614},"arrive":"20:40","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:45","_departUserSet":true}],"drives":[20,5,20],"modes":["drive","walk","drive"]},{"label":"Day 2 · 4/27（一）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"10:10","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"摩西分海，找地方吃或是買7-11","depart":"12:30","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"10:30","_departUserSet":true},{"name":"澎湖水族館-門票300","depart":"16:00","stay":215,"note":"13:30 觸摸池  14:00礁岩池 15:00 餵食秀","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"12:55","_departUserSet":true},{"name":"池東大菓葉玄武岩","depart":"19:00","stay":155,"note":"西嶼吃晚餐\n二崁聚落也在附近","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"16:25","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"19:45","_departUserSet":true},{"name":"無人海灘看流星或觀音亭看煙火(額外行程)","depart":"22:10","stay":60,"note":"看天氣與壅擠程度再討論要去哪裡\n需要穿外套、攜帶可變紅光的手電筒","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"21:10","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"23:35","stay":60,"note":"休息","arrive":"22:35","coords":{"lat":23.5253088606287,"lng":119.59690207116421}}],"drives":[20,25,25,45,25,25],"modes":["drive","drive","drive","drive","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"09:45","stay":10,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363},"arrive":"09:35","_departUserSet":true},{"name":"🏛 舊郵便局+街上買伴手禮+吃中餐","depart":"12:55","stay":125,"note":"\n","coords":{"lat":23.56374738106533,"lng":119.56396447301476},"arrive":"10:00","_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"13:20","stay":10,"note":"","arrive":"13:10","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"澎湖六合租車-石泉店","depart":"14:00","stay":30,"note":"一台車去還車坐接駁車,另一車直接去機場\n車行電話:06-9221777","arrive":"13:30","_departUserSet":true,"coords":{"lat":23.561463705191535,"lng":119.5944892153432}},{"name":"✈️ 澎湖機場","depart":"14:10","stay":0,"note":"班機 15:30","arrive":"14:10"}],"drives":[20,15,15,10,10,15],"modes":["drive","walk","walk","drive","drive","drive"]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -4519,6 +4522,7 @@ document.addEventListener('keydown', function(e) {
 // INIT
 // ═══════════════════════════════════════════
 renderAll();
+
 
 
 
