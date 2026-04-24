@@ -15,6 +15,8 @@
 
 
 
+
+
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -524,47 +526,42 @@ body {
 .tag-stay    { background: var(--green-bg); color: var(--green); }
 .tag-note    { background: var(--red-bg);   color: var(--red);   }
 
-/* Stop Google Maps button in itinerary */
-.stop-gmaps-btn {
+/* ── 景點行內小按鈕（Maps / 導航）共用基底 ── */
+.stop-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: #e8f4fe;
-  border: 1.5px solid #90c4e8;
   border-radius: 8px;
   font-size: 0.65rem;
-  color: #1a6b8a;
-  padding: 2px 7px;
+  padding: 3px 8px;
   text-decoration: none;
   white-space: nowrap;
   font-family: 'Noto Sans TC', sans-serif;
   font-weight: 500;
-  transition: all 0.15s;
+  border: 1.5px solid transparent;
+  cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  flex-shrink: 0;
+  align-self: center;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
 }
-.stop-row:hover .stop-gmaps-btn { opacity: 1; }
+.stop-row:hover .stop-action-btn { opacity: 1; }
+
+/* Maps 按鈕：淺藍 */
+.stop-gmaps-btn {
+  background: #e8f4fe;
+  border-color: #90c4e8;
+  color: #1a6b8a;
+}
 .stop-gmaps-btn:hover { background: #1a73e8; border-color: #1a73e8; color: white; }
 
-/* Transit navigation button in itinerary */
+/* 導航按鈕：中藍，與 Maps 同色系但稍深 */
 .transit-nav-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #fff8e6;
-  border: 1.5px solid #f0c040;
-  border-radius: 8px;
-  font-size: 0.65rem;
-  color: #7a5200;
-  padding: 2px 8px;
-  text-decoration: none;
-  white-space: nowrap;
-  font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 500;
-  transition: all 0.15s;
-  cursor: pointer;
+  background: #d4eaf6;
+  border-color: #5aa8c8;
+  color: #155a76;
 }
-.transit-nav-btn:hover { background: #ffd700; border-color: #d4a800; color: #5a3c00; }
+.transit-nav-btn:hover { background: #1a6b8a; border-color: #1a6b8a; color: white; }
 
 /* PDF Modal */
 .pdf-option-group {
@@ -1308,7 +1305,7 @@ body {
 /* ── 手機觸控：常態顯示 hover-only 元素 ── */
 @media (hover: none) and (pointer: coarse) {
   .stop-name .edit-icon { opacity: 0.6; }
-  .stop-gmaps-btn { opacity: 1; }
+  .stop-action-btn { opacity: 1; }
   .stop-delete { opacity: 0.55; }
   .stop-move-wrap { opacity: 1; }
   .map-stop-actions { opacity: 1; }
@@ -1398,9 +1395,10 @@ body {
   /* Transit */
   .transit-row { padding: 0 10px; }
   .transit-left { width: 26px; margin-right: 10px; }
-  .transit-info { font-size: 0.7rem; gap: 6px; flex-wrap: wrap; }
   .transit-dur { font-size: 0.67rem; }
-  .transit-nav-btn { font-size: 0.62rem; padding: 2px 6px; }
+
+  /* 行內小按鈕手機尺寸 */
+  .stop-action-btn { font-size: 0.63rem; padding: 3px 7px; opacity: 1; }
 
   /* Add Day */
   .add-day-btn { font-size: 0.8rem; padding: 12px; border-radius: 16px; }
@@ -1436,13 +1434,6 @@ body {
   /* TOAST */
   .toast { font-size: 0.78rem; padding: 9px 16px; bottom: 16px; max-width: calc(100vw - 32px); white-space: normal; text-align: center; }
 
-  /* Google Maps buttons — always visible on mobile */
-  .stop-gmaps-btn {
-    opacity: 1;
-    font-size: 0.62rem;
-    padding: 2px 5px;
-  }
-
   /* MAP NAV BOTTOM */
   .map-nav-bottom { gap: 8px; padding: 12px; }
   .map-nav-hero-btn { font-size: 0.8rem; padding: 10px 12px; min-width: 0; }
@@ -1457,7 +1448,7 @@ body {
   .stop-name { font-size: 0.9rem; }
   .map-day-tab { padding: 7px 14px; font-size: 0.78rem; }
   .stop-delete { opacity: 0.5; }
-  .stop-gmaps-btn { opacity: 1; }
+  .stop-action-btn { opacity: 1; }
   .map-stop-actions { opacity: 1; }
 }
 
@@ -1564,6 +1555,8 @@ body {
   opacity: 0.8;
   margin-left: auto;
 }
+
+
 
 
 
@@ -1803,10 +1796,12 @@ body {
 
 
 
+
+
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"🏝 澎湖三日遊","subtitle":"4/26（五）— 4/28（日）· 鎖港郵局會館","days":[{"label":"Day 1 · 4/26（五）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠開兩台車來機場接大家","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"晚餐- 新村美食館","depart":"20:35","stay":90,"note":"舅媽預定美食7:00","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"18:40","_departUserSet":true},{"name":"市區中正路商圈","depart":"21:25","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614},"arrive":"20:40","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:45","_departUserSet":true}],"drives":[20,5,20],"modes":["drive","walk","drive"]},{"label":"Day 2 · 4/27（六）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"10:10","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"摩西分海，找地方吃或是買7-11","depart":"12:30","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"10:30","_departUserSet":true},{"name":"澎湖水族館-門票300","depart":"16:00","stay":215,"note":"13:30 觸摸池  14:00礁岩池 15:00 餵食秀","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"12:55","_departUserSet":true},{"name":"池東大菓葉玄武岩","depart":"19:00","stay":155,"note":"西嶼吃晚餐","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"16:25","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"19:45","_departUserSet":true},{"name":"無人海灘看流星或觀音亭看煙火","depart":"01:00","stay":200,"note":"看天氣與壅擠程度再討論要去哪裡","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"21:10","_departUserSet":true}],"drives":[20,25,25,45,25],"modes":["drive","drive","drive","drive","drive"]},{"label":"Day 3 · 4/28（日）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"09:45","stay":10,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363},"arrive":"09:35","_departUserSet":true},{"name":"🏛 舊郵便局+街上買伴手禮","depart":"12:55","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476},"arrive":"10:00","_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"13:20","stay":10,"note":"","arrive":"13:10","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"澎湖六合租車-石泉店","depart":"14:00","stay":30,"note":"一台車去還車坐接駁車,另一車直接去機場","arrive":"13:30","_departUserSet":true,"coords":{"lat":23.561463705191535,"lng":119.5944892153432}},{"name":"✈️ 澎湖機場","depart":"14:10","stay":0,"note":"班機 15:30","arrive":"14:10"}],"drives":[20,15,15,10,10,15],"modes":["drive","walk","walk","drive","drive","drive"]}]};
+const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠開兩台車來機場接大家","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"晚餐- 新村美食館","depart":"20:35","stay":90,"note":"舅媽預定美食7:00","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"18:40","_departUserSet":true},{"name":"市區中正路商圈","depart":"21:25","stay":45,"note":"","coords":{"lat":23.568000590628067,"lng":119.56705275743614},"arrive":"20:40","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"抵達・休息","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:45","_departUserSet":true}],"drives":[20,5,20],"modes":["drive","walk","drive"]},{"label":"Day 2 · 4/27（一）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"10:10","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"摩西分海，找地方吃或是買7-11","depart":"12:30","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"10:30","_departUserSet":true},{"name":"澎湖水族館-門票300","depart":"16:00","stay":215,"note":"13:30 觸摸池  14:00礁岩池 15:00 餵食秀","coords":{"lat":23.65016972434755,"lng":119.60394526931364},"arrive":"12:55","_departUserSet":true},{"name":"池東大菓葉玄武岩","depart":"19:00","stay":155,"note":"西嶼吃晚餐","coords":{"lat":23.59856131772855,"lng":119.51675351903485},"arrive":"16:25","_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"19:45","_departUserSet":true},{"name":"無人海灘看流星或觀音亭看煙火","depart":"01:00","stay":200,"note":"看天氣與壅擠程度再討論要去哪裡","coords":{"lat":23.568847825856476,"lng":119.56239712594792},"arrive":"21:10","_departUserSet":true}],"drives":[20,25,25,45,25],"modes":["drive","drive","drive","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:15","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"09:45","stay":10,"note":"","coords":{"lat":23.567468297852084,"lng":119.5706976124363},"arrive":"09:35","_departUserSet":true},{"name":"🏛 舊郵便局+街上買伴手禮","depart":"12:55","stay":125,"note":"","coords":{"lat":23.56374738106533,"lng":119.56396447301476},"arrive":"10:00","_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"13:20","stay":10,"note":"","arrive":"13:10","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"澎湖六合租車-石泉店","depart":"14:00","stay":30,"note":"一台車去還車坐接駁車,另一車直接去機場","arrive":"13:30","_departUserSet":true,"coords":{"lat":23.561463705191535,"lng":119.5944892153432}},{"name":"✈️ 澎湖機場","depart":"14:10","stay":0,"note":"班機 15:30","arrive":"14:10"}],"drives":[20,15,15,10,10,15],"modes":["drive","walk","walk","drive","drive","drive"]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -2004,9 +1999,6 @@ function renderStops(di) {
           </div>
           <div class="transit-line-bot"></div>
         </div>
-        <div class="transit-info">
-          <a class="transit-nav-btn" href="${_buildSegGMapsURL(di, si - 1)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>
-        </div>
       `;
       container.appendChild(tr);
     }
@@ -2020,7 +2012,8 @@ function renderStops(di) {
         <div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
         <div class="stop-meta">${arriveTag}${leaveTag}${stayTag}${noteTag}</div>
       </div>
-      <a class="stop-gmaps-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍 Maps</a>
+      <a class="stop-action-btn stop-gmaps-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍 Maps</a>
+      ${!isLast ? `<a class="stop-action-btn transit-nav-btn" href="${_buildSegGMapsURL(di, si)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>` : ''}
       <div class="stop-move-wrap">
         <button class="stop-move-btn" onclick="moveStop(${di},${si},-1)" title="上移" ${si === 0 ? 'disabled' : ''}>▲</button>
         <button class="stop-move-btn" onclick="moveStop(${di},${si},1)" title="下移" ${isLast ? 'disabled' : ''}>▼</button>
@@ -4030,6 +4023,8 @@ document.addEventListener('keydown', function(e) {
 // INIT
 // ═══════════════════════════════════════════
 renderAll();
+
+
 
 
 
