@@ -453,6 +453,50 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 }
 .stop-row.last .stop-line { display: none; }
 
+/* 球標可點擊（開啟地圖） */
+.stop-num-link {
+  text-decoration: none;
+  color: white;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.15s, box-shadow 0.15s;
+}
+.stop-num-link:hover {
+  background: var(--sky);
+  transform: scale(1.18);
+  box-shadow: 0 2px 8px rgba(26,107,138,0.35);
+}
+
+/* 連接線可點擊（導航） */
+.stop-line-nav {
+  display: block;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.18s;
+}
+.stop-line-nav::after {
+  content: '🗺';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.7rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+  pointer-events: none;
+  white-space: nowrap;
+  background: white;
+  border-radius: 6px;
+  padding: 1px 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.stop-line-nav:hover {
+  background: var(--sky-light);
+  border-radius: 2px;
+}
+.stop-line-nav:hover::after {
+  opacity: 1;
+}
+
 /* Transit */
 .transit-row {
   display: flex;
@@ -460,15 +504,19 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
   padding: 0 16px;
 }
 
-/* 導航按鈕欄（按鈕已移至直線上，此欄保留為空白佔位）*/
+/* 導航按鈕欄：橫排帶文字按鈕，對齊右側內容欄 */
 .transit-nav-col {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0;
 }
 
-/* transit-zone 按鈕：讓父層控制 opacity，覆蓋 stop-action-btn 的 opacity:0 */
+/* transit-zone 按鈕：永遠可見 */
 .transit-zone-btn {
   opacity: 1 !important;
-  align-self: auto;
+  align-self: center;
 }
 .transit-left {
   display: flex; flex-direction: column; align-items: center;
@@ -476,24 +524,12 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
   overflow: visible;
   position: relative;
 }
-/* 疊在垂直線上的按鈕群 */
-.transit-btns-on-line {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-.transit-btns-on-line .stop-action-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
+/* 貫穿整個 transit-row 的垂直連接線 */
+.transit-line-full {
+  width: 2px;
+  flex: 1;
+  background: var(--border);
+  min-height: 32px;
 }
 .transit-line-top { width: 2px; height: 2px; background: var(--border); }
 .transit-icon-wrap {
@@ -2156,27 +2192,7 @@ function renderStops(di) {
   day.stops.forEach((stop, si) => {
     const isLast = si === day.stops.length - 1;
 
-    // ── 若非第一個景點，先渲染「交通 + 導航按鈕」的 transit-row ──
-    if (si > 0) {
-      const mode = (day.modes && day.modes[si - 1]) || 'drive';
-      const isWalk = mode === 'walk';
-      const modeIcon = isWalk ? '🚶' : '🚗';
-      const modeLabel = isWalk ? '步行' : '車程';
-      const tr = document.createElement('div');
-      tr.className = 'transit-row';
-      tr.innerHTML = `
-        <div class="transit-left">
-          <div class="transit-line-top" style="flex:1;min-height:8px;"></div>
-          <div class="transit-btns-on-line">
-            <a class="stop-action-btn stop-gmaps-btn transit-zone-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍</a>
-            <a class="stop-action-btn transit-nav-btn transit-zone-btn" href="${_buildSegGMapsURL(di, si - 1)}" target="_blank" title="開啟此段 Google Maps 導航">🗺</a>
-          </div>
-          <div class="transit-line-bot" style="flex:0 0 8px;min-height:8px;"></div>
-        </div>
-        <div class="transit-nav-col"></div>
-      `;
-      container.appendChild(tr);
-    }
+    // transit-row 已移除，導航功能整合至球標與連接線
 
     // ── 景點 row ──
     const row = document.createElement('div');
@@ -2230,10 +2246,15 @@ function renderStops(di) {
       ? `<div class="stop-meta-notes">${notes.map(n => `<span class="tag tag-note">${escHtml(n)}</span>`).join('')}</div>`
       : '';
 
+    const stopGMapsURL = _buildStopGMapsURL(stop);
+    const segNavURL = !isLast ? _buildSegGMapsURL(di, si) : '';
     row.innerHTML = `
       <div class="stop-left">
-        <div class="stop-num">${si + 1}</div>
-        <div class="stop-line"></div>
+        <a class="stop-num stop-num-link" href="${stopGMapsURL}" target="_blank" title="在 Google Maps 查看「${escHtml(stop.name)}」">${si + 1}</a>
+        ${!isLast
+          ? `<a class="stop-line stop-line-nav" href="${segNavURL}" target="_blank" title="導航前往下一站"></a>`
+          : `<div class="stop-line"></div>`
+        }
       </div>
       <div class="stop-content" onclick="editStop(${di},${si})">
         ${tagsAboveHTML}<div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
