@@ -182,6 +182,64 @@ body {
 .map-toggle-btn:hover { background: #155a76; }
 .map-collapsed #leaflet-map { display: none !important; }
 
+/* ── 行程閱覽模式 ── */
+body.itinerary-preview-mode .edit-hint { display: none !important; }
+body.itinerary-preview-mode .day-edit-btn { display: none !important; }
+body.itinerary-preview-mode .day-delete-btn { display: none !important; }
+body.itinerary-preview-mode .day-map-btn { display: none !important; }
+body.itinerary-preview-mode .stop-delete { display: none !important; }
+body.itinerary-preview-mode .stop-move-wrap { display: none !important; }
+body.itinerary-preview-mode .add-stop-btn { display: none !important; }
+body.itinerary-preview-mode .add-day-btn { display: none !important; }
+body.itinerary-preview-mode .stop-content { cursor: default !important; pointer-events: none !important; }
+body.itinerary-preview-mode .transit-dur-below { cursor: default !important; pointer-events: none !important; }
+body.itinerary-preview-mode .tag-transit-dur { cursor: default !important; pointer-events: none !important; }
+body.itinerary-preview-mode .transit-mode-toggle { display: none !important; }
+body.itinerary-preview-mode .header h1 { cursor: default !important; }
+body.itinerary-preview-mode .header .subtitle { cursor: default !important; }
+body.itinerary-preview-mode .header h1 span { display: none !important; }
+body.itinerary-preview-mode .header .subtitle span { display: none !important; }
+body.itinerary-preview-mode .day-badge { cursor: default !important; }
+body.itinerary-preview-mode .day-theme-tag { cursor: default !important; }
+body.itinerary-preview-mode .stop-action-btn { opacity: 1 !important; }
+body.itinerary-preview-mode .stop-gmaps-btn { display: none !important; }
+body.itinerary-preview-mode .transit-nav-btn { display: none !important; }
+body.itinerary-preview-mode .transit-nav-col { display: none !important; }
+
+/* 閱覽模式按鈕 */
+.map-preview-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: var(--ocean);
+  border: 1.5px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.map-preview-btn:hover { background: var(--light); border-color: var(--sky); }
+.map-preview-btn.active { background: var(--ocean); color: white; border-color: var(--ocean); }
+
+/* 閱覽模式：隱藏所有 UI 疊層，地圖全屏展示 */
+body.map-preview-mode .map-sticky-top { padding-bottom: 0; }
+body.map-preview-mode .map-stop-list { display: none; }
+body.map-preview-mode #map-nav-btn-wrap { display: none; }
+body.map-preview-mode .map-page-header { display: none; }
+body.map-preview-mode .map-day-tabs { pointer-events: auto; }
+body.map-preview-mode #leaflet-map {
+  height: clamp(340px, 62vh, 600px);
+  border-radius: 12px;
+}
+/* 閱覽模式下隱藏景點清單捲動區，只留地圖 */
+body.map-preview-mode .map-scroll-body { display: none; }
+body.map-preview-mode #page-map.active { overflow: visible; height: auto; }
+body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
+
 /* ── MAP PAGE STICKY LAYOUT ── */
 #page-map.active {
   display: flex;
@@ -397,14 +455,46 @@ body {
 /* Transit */
 .transit-row {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   padding: 0 16px;
+}
+
+/* 導航按鈕欄（按鈕已移至直線上，此欄保留為空白佔位）*/
+.transit-nav-col {
+  flex: 1;
+}
+
+/* transit-zone 按鈕：讓父層控制 opacity，覆蓋 stop-action-btn 的 opacity:0 */
+.transit-zone-btn {
+  opacity: 1 !important;
+  align-self: auto;
 }
 .transit-left {
   display: flex; flex-direction: column; align-items: center;
   width: 30px; flex-shrink: 0; margin-right: 12px;
+  overflow: visible;
+  position: relative;
 }
-.transit-line-top { width: 2px; height: 6px; background: var(--border); }
+/* 疊在垂直線上的按鈕群 */
+.transit-btns-on-line {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.transit-btns-on-line .stop-action-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+.transit-line-top { width: 2px; height: 2px; background: var(--border); }
 .transit-icon-wrap {
   width: 20px; height: 20px;
   display: flex; align-items: center; justify-content: center;
@@ -435,6 +525,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  height: 100%;
   gap: 3px;
 }
 .transit-dur-below {
@@ -449,12 +541,6 @@ body {
   transition: background 0.2s;
 }
 .transit-dur-below:hover { background: #d0eaf5; border-color: var(--sky); }
-.transit-icon-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
 .transit-dur-below {
   font-size: 0.65rem;
   color: var(--ocean);
@@ -489,7 +575,7 @@ body {
 /* Stop content */
 .stop-content {
   flex: 1;
-  padding: 10px 8px 8px 0;
+  padding: 0 8px 8px 0;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -511,7 +597,21 @@ body {
 }
 .stop-content:hover .edit-icon { opacity: 1; }
 .stop-meta {
-  display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 5px;
+}
+.stop-meta-times {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.stop-meta-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 .tag {
   font-size: 0.69rem;
@@ -525,6 +625,24 @@ body {
 .tag-leave   { background: var(--amber-light-bg); color: var(--amber-light); }
 .tag-stay    { background: var(--green-bg); color: var(--green); }
 .tag-note    { background: var(--red-bg);   color: var(--red);   }
+.tag-transit-dur { background: var(--light); color: var(--ocean); transition: background 0.15s; }
+.tag-transit-dur:hover { background: #d0eaf5; }
+.stop-tags-above ~ .stop-name { padding-top: 0; }
+.stop-name { padding-top: 10px; }
+.b-wrap { display: flex; gap: 8px; align-items: stretch; margin-bottom: 6px; padding-top: 10px; cursor: pointer; }
+.b-wrap.b-times-only { cursor: default; }
+.b-transit { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--light); border-radius: 10px; padding: 5px 10px; gap: 2px; flex-shrink: 0; transition: background 0.2s; }
+.b-wrap:not(.b-times-only):hover .b-transit { background: #d0eaf5; }
+.b-transit-icon { font-size: 13px; line-height: 1; }
+.b-transit-time { font-size: 10px; color: var(--ocean); font-weight: 500; white-space: nowrap; }
+.b-times { display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+.b-time-row { display: flex; gap: 5px; align-items: center; }
+.b-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.b-dot-arrive { background: var(--amber); }
+.b-dot-leave  { background: var(--amber-light); }
+.b-time-text { font-size: 11px; color: var(--mid); }
+.b-time-val  { font-size: 11px; color: var(--dark); font-weight: 500; }
+.b-wrap ~ .stop-name { padding-top: 0; }
 
 /* ── 景點行內小按鈕（Maps / 導航）共用基底 ── */
 .stop-action-btn {
@@ -804,14 +922,22 @@ body {
 .map-label-marker {
   background: var(--ocean);
   color: white;
-  border-radius: 50%;
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem;
+  border-radius: 999px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
   font-weight: 700;
   font-family: 'Noto Sans TC', sans-serif;
   border: 2px solid white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+  letter-spacing: 0.03em;
 }
 .map-label-marker.geocode-fail {
   background: #999;
@@ -1243,6 +1369,56 @@ body {
   margin-top: 5px;
   flex-wrap: wrap;
 }
+.cap-transit-row {
+  display: flex;
+  align-items: stretch;
+  min-height: 36px;
+}
+.cap-transit-row .cap-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 32px;
+  flex-shrink: 0;
+  margin-right: 14px;
+}
+.cap-transit-line-top {
+  width: 2px;
+  height: 6px;
+  background: var(--border);
+}
+.cap-transit-line-bot {
+  width: 2px;
+  flex: 1;
+  min-height: 6px;
+  background: var(--border);
+}
+.cap-transit-icon-wrap {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--light);
+  border: 1.5px dashed var(--sky);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+.cap-transit-icon-wrap.cap-walk {
+  border-color: var(--green);
+  background: var(--green-bg);
+}
+.cap-transit-info {
+  font-size: 0.68rem;
+  color: var(--ocean);
+  background: var(--light);
+  padding: 2px 8px;
+  border-radius: 8px;
+  align-self: center;
+  white-space: nowrap;
+}
+/* 舊的 cap-transit（PDF buildPrintHTML 仍使用，保留） */
 .cap-transit {
   display: flex;
   align-items: center;
@@ -1572,7 +1748,7 @@ body {
     <span id="nav-title-text">🏝 澎湖三日遊</span>
     <span class="nav-title-edit-icon">✏️</span>
   </span>
-  <button class="nav-btn active" onclick="showPage('itinerary')" aria-label="行程頁">📋 行程</button>
+  <button class="nav-btn active" id="nav-itinerary-btn" onclick="toggleItineraryView()" aria-label="行程頁">📋 行程</button>
   <button class="nav-btn" onclick="showPage('map')" aria-label="地圖頁">🗺 地圖</button>
   <button class="nav-btn" onclick="undo()" aria-label="復原上一步" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   <div class="export-wrap">
@@ -1640,7 +1816,10 @@ body {
       <p>點擊景點可編輯，拖曳地圖縮放</p>
     </div>
     <div class="map-day-tabs" id="map-tabs"></div>
-    <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:4px;">
+      <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
+      <button class="map-preview-btn" id="map-preview-btn" onclick="toggleMapPreview()" title="閱覽模式：顯示匯出用的乾淨地圖">👁 閱覽模式</button>
+    </div>
     <div id="leaflet-map"></div>
   </div>
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
@@ -1659,15 +1838,22 @@ body {
       <div class="pdf-option-item selected" id="pdf-opt-with-map" onclick="selectPdfOption('with-map')">
         <span class="pdf-option-icon">🗺</span>
         <div>
-          <div class="pdf-option-label">含地圖</div>
+          <div class="pdf-option-label">行程含地圖</div>
           <div class="pdf-option-desc">每天行程附上路線地圖截圖（較慢）</div>
         </div>
       </div>
       <div class="pdf-option-item" id="pdf-opt-no-map" onclick="selectPdfOption('no-map')">
         <span class="pdf-option-icon">📋</span>
         <div>
-          <div class="pdf-option-label">不含地圖</div>
-          <div class="pdf-option-desc">僅行程文字，速度較快</div>
+          <div class="pdf-option-label">僅行程文字</div>
+          <div class="pdf-option-desc">不含地圖，速度較快</div>
+        </div>
+      </div>
+      <div class="pdf-option-item" id="pdf-opt-map-only" onclick="selectPdfOption('map-only')">
+        <span class="pdf-option-icon">🗾</span>
+        <div>
+          <div class="pdf-option-label">轉檔地圖</div>
+          <div class="pdf-option-desc">將每天路線地圖截圖匯出為 PDF</div>
         </div>
       </div>
     </div>
@@ -1684,8 +1870,8 @@ body {
     <h3>✏️ 編輯景點</h3>
     <label>景點名稱</label>
     <input type="text" id="edit-name" placeholder="景點名稱">
-    <label>備註（可選）</label>
-    <input type="text" id="edit-note" placeholder="如：大菓葉・鯨魚洞">
+    <label>備註（可選，一行一條）</label>
+    <textarea id="edit-note" placeholder="每行一條備註，如：&#10;舅媽預定餐廳&#10;記得帶防曬" rows="3" style="resize:vertical;"></textarea>
     <label>📍 Google 座標（可選）</label>
     <input type="text" id="edit-coords" placeholder="從 Google Maps 右鍵複製，如：23.5712, 119.5634">
     <p id="coords-hint" style="font-size:0.72rem;margin-top:4px;min-height:1.1em"></p>
@@ -1965,43 +2151,80 @@ function renderStops(di) {
 
   day.stops.forEach((stop, si) => {
     const isLast = si === day.stops.length - 1;
-    const row = document.createElement('div');
-    row.className = `stop-row${isLast ? ' last' : ''}`;
 
-    let arriveTag = '';
+    // ── 若非第一個景點，先渲染「交通 + 導航按鈕」的 transit-row ──
     if (si > 0) {
-      const prevStop = day.stops[si - 1];
-      const drive = day.drives[si - 1] || 0;
-      const arrMins = timeToMinutes(prevStop.depart) + drive;
-      arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
-    }
-    const leaveTag = !isLast
-      ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
-      : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
-    const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
-    const stayTag = stayLabel(stop.stay)
-      ? `<span class="tag tag-stay">${stayLabel(stop.stay)}</span>` : '';
-
-    // 若非第一個景點，先渲染前一段的交通列（在此景點之前）
-    if (si > 0) {
-      const tr = document.createElement('div');
-      tr.className = 'transit-row';
       const mode = (day.modes && day.modes[si - 1]) || 'drive';
       const isWalk = mode === 'walk';
       const modeIcon = isWalk ? '🚶' : '🚗';
       const modeLabel = isWalk ? '步行' : '車程';
+      const tr = document.createElement('div');
+      tr.className = 'transit-row';
       tr.innerHTML = `
         <div class="transit-left">
-          <div class="transit-line-top"></div>
-          <div class="transit-icon-col">
-            <div class="transit-icon-wrap${isWalk ? ' walk' : ''}" onclick="quickToggleMode(${di},${si - 1})" title="點擊切換交通方式" style="cursor:pointer;">${modeIcon}</div>
-            <div class="transit-dur-below" onclick="editDrive(${di},${si - 1})" title="點擊編輯${modeLabel}">約 ${day.drives[si - 1]} 分鐘</div>
+          <div class="transit-line-top" style="flex:1;min-height:8px;"></div>
+          <div class="transit-btns-on-line">
+            <a class="stop-action-btn stop-gmaps-btn transit-zone-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍</a>
+            <a class="stop-action-btn transit-nav-btn transit-zone-btn" href="${_buildSegGMapsURL(di, si - 1)}" target="_blank" title="開啟此段 Google Maps 導航">🗺</a>
           </div>
-          <div class="transit-line-bot"></div>
+          <div class="transit-line-bot" style="flex:0 0 8px;min-height:8px;"></div>
         </div>
+        <div class="transit-nav-col"></div>
       `;
       container.appendChild(tr);
     }
+
+    // ── 景點 row ──
+    const row = document.createElement('div');
+    row.className = `stop-row${isLast ? ' last' : ''}`;
+
+    // 計算抵達時間
+    let tagsAboveHTML = '';
+    if (si > 0) {
+      const prevStop = day.stops[si - 1];
+      const drive = day.drives[si - 1] || 0;
+      const arrMins = timeToMinutes(prevStop.depart) + drive;
+      const mode = (day.modes && day.modes[si - 1]) || 'drive';
+      const isWalkStop = mode === 'walk';
+      const modeEmoji = isWalkStop ? '🚶' : '🚗';
+      const modeLabel2 = isWalkStop ? '步行' : '車程';
+      const leaveTime = !isLast ? stop.depart : '';
+      const leaveRow = leaveTime
+        ? `<div class="b-time-row"><div class="b-dot b-dot-leave"></div><span class="b-time-text">離開</span><span class="b-time-val">${leaveTime}</span></div>`
+        : '';
+      tagsAboveHTML = `
+        <div class="b-wrap" onclick="event.stopPropagation();editDrive(${di},${si - 1})" title="點擊編輯${modeLabel2}">
+          <div class="b-transit">
+            <span class="b-transit-icon">${modeEmoji}</span>
+            <span class="b-transit-time">約 ${drive} 分鐘</span>
+          </div>
+          <div class="b-times">
+            <div class="b-time-row">
+              <div class="b-dot b-dot-arrive"></div>
+              <span class="b-time-text">抵達</span>
+              <span class="b-time-val">${minutesToTime(arrMins)}</span>
+            </div>
+            ${leaveRow}
+          </div>
+        </div>`;
+    } else if (!isLast) {
+      tagsAboveHTML = `
+        <div class="b-wrap b-times-only">
+          <div class="b-times">
+            <div class="b-time-row">
+              <div class="b-dot b-dot-leave"></div>
+              <span class="b-time-text">離開</span>
+              <span class="b-time-val">${stop.depart}</span>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // 多條備註（換行分隔）
+    const notes = stop.note ? stop.note.split('\n').map(n => n.trim()).filter(Boolean) : [];
+    const notesHTML = notes.length
+      ? `<div class="stop-meta-notes">${notes.map(n => `<span class="tag tag-note">${escHtml(n)}</span>`).join('')}</div>`
+      : '';
 
     row.innerHTML = `
       <div class="stop-left">
@@ -2009,11 +2232,9 @@ function renderStops(di) {
         <div class="stop-line"></div>
       </div>
       <div class="stop-content" onclick="editStop(${di},${si})">
-        <div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
-        <div class="stop-meta">${arriveTag}${leaveTag}${stayTag}${noteTag}</div>
+        ${tagsAboveHTML}<div class="stop-name">${escHtml(stop.name)} <span class="edit-icon">✏️</span></div>
+        <div class="stop-meta">${notesHTML}</div>
       </div>
-      <a class="stop-action-btn stop-gmaps-btn" href="${_buildStopGMapsURL(stop)}" target="_blank" title="在 Google Maps 開啟此景點">🔍 Maps</a>
-      ${!isLast ? `<a class="stop-action-btn transit-nav-btn" href="${_buildSegGMapsURL(di, si)}" target="_blank" title="開啟此段 Google Maps 導航">🗺 導航</a>` : ''}
       <div class="stop-move-wrap">
         <button class="stop-move-btn" onclick="moveStop(${di},${si},-1)" title="上移" ${si === 0 ? 'disabled' : ''}>▲</button>
         <button class="stop-move-btn" onclick="moveStop(${di},${si},1)" title="下移" ${isLast ? 'disabled' : ''}>▼</button>
@@ -2176,6 +2397,8 @@ function renderMap() {
       center: [23.565, 119.579], // 澎湖
       zoom: 12,
       zoomControl: true,
+      zoomDelta: 0.5,    // 每按一次 +/- 移動 0.5 級
+      zoomSnap: 0.5,     // 允許停在 0.5 的倍數
     });
     // 使用台灣地圖（國土測繪圖磚，正體中文）
     // fallback 到 OpenStreetMap
@@ -2250,20 +2473,26 @@ async function refreshMapMarkers() {
         if (old) { leafletMap.removeLayer(old); mapMarkers = mapMarkers.filter(m => m !== old); }
       });
 
-      // 標籤：同位置用 "A/E" 格式
+      // 標籤：同位置用 "A/E/G" 格式
       const letters = [...new Set(sameIdxs)].sort((a,b)=>a-b).map(idx => stopLetter(idx));
       const isMulti = letters.length > 1;
-      const labelHTML = `<div class="map-label-marker${isMulti ? ' multi' : ''}">${letters.join('/')}</div>`;
+      const labelText = letters.join('/');
+
+      // 預估寬度：每字元約 8px + 兩側 padding 14px，最少 28px
+      const estW = Math.max(28, labelText.length * 8 + 14);
+      const iconH = 28;
+
+      const labelHTML = `<div class="map-label-marker${isMulti ? ' multi' : ''}">${labelText}</div>`;
       const popupLines = [...new Set(sameIdxs)].sort((a,b)=>a-b)
-        .map(idx => `<b>${stopLetter(idx)}. ${stops[idx].name}</b><br><span style="font-size:0.8em">${stops[idx].depart}</span>`)
+        .map(idx => `<b>${stopLetter(idx)}. ${stops[idx].name}</b><br><span style="font-size:0.8em">${stops[idx].depart || ''}</span>`)
         .join('<hr style="margin:4px 0">');
 
       const icon = L.divIcon({
         className: '',
         html: labelHTML,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
-        popupAnchor: [0, -14],
+        iconSize: [estW, iconH],
+        iconAnchor: [estW / 2, iconH / 2],
+        popupAnchor: [0, -(iconH / 2) - 4],
       });
       const marker = L.marker([coord.lat, coord.lng], { icon })
         .bindPopup(popupLines)
@@ -2349,11 +2578,13 @@ function drawPolylineIfReady(coords, total) {
       }
     }
 
-    // fitBounds 用所有有值座標
+    // fitBounds 用所有有值座標，padding 只留球標半身距離
     const orderedCoords = validIdxs.map(j => coords[j]);
     if (orderedCoords.length >= 2) {
       const bounds = L.latLngBounds(orderedCoords);
-      leafletMap.fitBounds(bounds, { padding: [40, 40] });
+      leafletMap.fitBounds(bounds, { padding: [18, 18], maxZoom: 16 });
+    } else if (orderedCoords.length === 1) {
+      leafletMap.setView(orderedCoords[0], 14);
     }
   }
 }
@@ -2412,7 +2643,7 @@ function renderMapStopList() {
           title="點擊編輯景點名稱"
           onblur="mapInlineSaveName(${si}, this.value)"
           onkeydown="if(event.key==='Enter'){this.blur();}">
-        ${stop.note ? `<div class="map-stop-note">${escHtml(stop.note)}</div>` : ''}
+        ${stop.note ? stop.note.split('\n').map(n => n.trim()).filter(Boolean).map(n => `<div class="map-stop-note">${escHtml(n)}</div>`).join('') : ''}
         <div class="map-coords-row">
           <input class="map-inline-coords"
             value="${stop.coords ? stop.coords.lat + ', ' + stop.coords.lng : ''}"
@@ -2652,15 +2883,55 @@ function mapAddStop() {
 // ═══════════════════════════════════════════
 // PAGE NAV
 // ═══════════════════════════════════════════
+let itineraryPreviewMode = false;
+
+function toggleItineraryView() {
+  // 若目前不在行程頁，先切換過去（不進閱覽模式）
+  const itineraryPage = document.getElementById('page-itinerary');
+  const isOnItinerary = itineraryPage.classList.contains('active');
+
+  if (!isOnItinerary) {
+    // 從其他頁面跳回行程頁，取消閱覽模式
+    if (itineraryPreviewMode) {
+      itineraryPreviewMode = false;
+      document.body.classList.remove('itinerary-preview-mode');
+    }
+    showPage('itinerary');
+    return;
+  }
+
+  // 在行程頁上：切換閱覽模式
+  itineraryPreviewMode = !itineraryPreviewMode;
+  const btn = document.getElementById('nav-itinerary-btn');
+  if (itineraryPreviewMode) {
+    document.body.classList.add('itinerary-preview-mode');
+    if (btn) { btn.textContent = '✕ 結束閱覽'; btn.classList.add('active'); }
+    showToast('👁 閱覽模式：隱藏編輯功能，再按一次離開');
+  } else {
+    document.body.classList.remove('itinerary-preview-mode');
+    if (btn) { btn.textContent = '📋 行程'; btn.classList.add('active'); }
+    showToast('✏️ 編輯模式恢復');
+  }
+}
+
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`page-${name}`).classList.add('active');
+  // 離開地圖頁時，自動退出地圖閱覽模式
+  if (name !== 'map' && mapPreviewMode) toggleMapPreview();
+  // 離開行程頁時，自動退出行程閱覽模式
+  if (name !== 'itinerary' && itineraryPreviewMode) {
+    itineraryPreviewMode = false;
+    document.body.classList.remove('itinerary-preview-mode');
+  }
   const btns = document.querySelectorAll('.nav-btn');
   if (name === 'itinerary') {
     btns[0].classList.add('active');
+    btns[0].textContent = itineraryPreviewMode ? '✕ 結束閱覽' : '📋 行程';
   } else if (name === 'map') {
     btns[1].classList.add('active');
+    btns[0].textContent = '📋 行程'; // 確保行程按鈕恢復正常文字
     // 動態計算 nav 高度（手機換行時 nav 較高）
     const navH = document.querySelector('.nav').offsetHeight;
     document.getElementById('page-map').style.height = `calc(100vh - ${navH}px)`;
@@ -2681,6 +2952,11 @@ function editStop(di, si) {
   document.getElementById('edit-note').value = stop.note || '';
   document.getElementById('edit-depart').value = stop.depart;
   document.getElementById('edit-stay').value = stop.stay || '';
+  // 最後一站不需要「離開時間」，隱藏相關欄位
+  const isLastStop = si === data.days[di].stops.length - 1;
+  const departRow = document.querySelector('#stop-modal .modal-row');
+  if (departRow) departRow.style.display = isLastStop ? 'none' : '';
+  const departHint = document.getElementById('modal-arrival-hint');
   // 填入已儲存的座標
   const coords = stop.coords;
   document.getElementById('edit-coords').value = coords ? `${coords.lat}, ${coords.lng}` : '';
@@ -2734,8 +3010,12 @@ function updateModalHint() {
   const isLast = si === day.stops.length - 1;
   const stayVal = parseInt(document.getElementById('edit-stay').value) || 0;
   let hint1 = arrivalMins !== null ? `抵達 ${minutesToTime(arrivalMins)}` : '';
-  let hint2 = stayVal ? `停留 ${stayVal} 分鐘後 ${minutesToTime(leaveMins)} 離開` : `${minutesToTime(leaveMins)} 離開`;
-  let hint3 = (!isLast && drive) ? `→ 下一站約 ${minutesToTime(leaveMins + drive)} 抵達` : '';
+  let hint2 = '';
+  let hint3 = '';
+  if (!isLast) {
+    hint2 = stayVal ? `停留 ${stayVal} 分鐘後 ${minutesToTime(leaveMins)} 離開` : `${minutesToTime(leaveMins)} 離開`;
+    hint3 = drive ? `→ 下一站約 ${minutesToTime(leaveMins + drive)} 抵達` : '';
+  }
   hint.textContent = [hint1, hint2, hint3].filter(Boolean).join('　');
 }
 
@@ -2751,9 +3031,12 @@ function saveStop() {
   }
   stop.name = newName;
   stop.note = document.getElementById('edit-note').value;
-  stop.depart = document.getElementById('edit-depart').value || stop.depart;
-  stop._departUserSet = true; // 使用者明確設定，recalcTimes 不覆寫
-  stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
+  const isLastStop = si === data.days[di].stops.length - 1;
+  if (!isLastStop) {
+    stop.depart = document.getElementById('edit-depart').value || stop.depart;
+    stop._departUserSet = true; // 使用者明確設定，recalcTimes 不覆寫
+    stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
+  }
 
   // 解析手動座標
   const rawCoords = document.getElementById('edit-coords').value.trim();
@@ -3070,12 +3353,48 @@ function toggleMapCollapse() {
 }
 
 // ═══════════════════════════════════════════
-// PDF MODAL
+// MAP PREVIEW MODE（閱覽模式）
 // ═══════════════════════════════════════════
+let mapPreviewMode = false;
+function toggleMapPreview() {
+  mapPreviewMode = !mapPreviewMode;
+  const btn = document.getElementById('map-preview-btn');
+  const body = document.body;
+
+  if (mapPreviewMode) {
+    body.classList.add('map-preview-mode');
+    if (btn) { btn.textContent = '✕ 結束閱覽'; btn.classList.add('active'); }
+    // 展開地圖（如果目前是收合狀態）
+    if (mapCollapsed) toggleMapCollapse();
+  } else {
+    body.classList.remove('map-preview-mode');
+    if (btn) { btn.innerHTML = '👁 閱覽模式'; btn.classList.remove('active'); }
+  }
+
+  // 重算地圖尺寸 + 重新 fitBounds
+  setTimeout(() => {
+    if (leafletMap) {
+      leafletMap.invalidateSize({ animate: false });
+      // 重新聚焦到當天景點
+      const day = data.days[currentMapDay];
+      if (day) {
+        Promise.all(day.stops.map(s => geocode(s.name, s))).then(coords => {
+          const valid = coords.filter(Boolean).map(c => [c.lat, c.lng]);
+          if (valid.length >= 2) {
+            leafletMap.fitBounds(L.latLngBounds(valid), { padding: [18, 18], maxZoom: 16, animate: true });
+          } else if (valid.length === 1) {
+            leafletMap.setView(valid[0], 14, { animate: true });
+          }
+        });
+      }
+    }
+  }, 120);
+}
 let pdfIncludeMap = true;
 function openPdfModal() {
   document.getElementById('export-menu').classList.remove('open');
   pdfIncludeMap = true;
+  window._pdfExportOpt = 'with-map';
   selectPdfOption('with-map');
   document.getElementById('pdf-modal').classList.add('open');
 }
@@ -3084,13 +3403,22 @@ function closePdfModal() {
 }
 function selectPdfOption(opt) {
   pdfIncludeMap = (opt === 'with-map');
-  document.getElementById('pdf-opt-with-map').classList.toggle('selected', pdfIncludeMap);
-  document.getElementById('pdf-opt-no-map').classList.toggle('selected', !pdfIncludeMap);
+  document.getElementById('pdf-opt-with-map').classList.toggle('selected', opt === 'with-map');
+  document.getElementById('pdf-opt-no-map').classList.toggle('selected', opt === 'no-map');
+  document.getElementById('pdf-opt-map-only').classList.toggle('selected', opt === 'map-only');
+  // 記錄選擇
+  document.getElementById('pdf-opt-with-map').dataset.sel = opt === 'with-map' ? '1' : '';
+  document.getElementById('pdf-opt-no-map').dataset.sel = opt === 'no-map' ? '1' : '';
+  document.getElementById('pdf-opt-map-only').dataset.sel = opt === 'map-only' ? '1' : '';
+  window._pdfExportOpt = opt;
 }
 async function confirmExportPDF() {
   closePdfModal();
-  if (pdfIncludeMap) {
+  const opt = window._pdfExportOpt || 'with-map';
+  if (opt === 'with-map') {
     await exportPDF();
+  } else if (opt === 'map-only') {
+    await exportMapOnlyPDF();
   } else {
     await exportPDFNoMap();
   }
@@ -3106,6 +3434,95 @@ async function exportPDFNoMap() {
   printWin.document.close();
   printWin.onload = () => { setTimeout(() => { printWin.focus(); printWin.print(); }, 800); };
   showToast('📄 列印視窗已開啟，選擇「儲存為 PDF」');
+}
+
+// ═══════════════════════════════════════════
+// PDF EXPORT — 僅地圖截圖
+// ═══════════════════════════════════════════
+async function exportMapOnlyPDF() {
+  showProgress('正在準備地圖截圖…', 5);
+  await new Promise(r => setTimeout(r, 200));
+
+  // 確保地圖已初始化
+  const wasOnMap = document.getElementById('page-map').classList.contains('active');
+  const prevDay = currentMapDay;
+
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-map').classList.add('active');
+  if (!leafletMap) { renderMap(); await new Promise(r => setTimeout(r, 1000)); }
+  else { leafletMap.invalidateSize(); }
+
+  // 進入閱覽模式（讓地圖更大更乾淨）
+  const wasPreview = mapPreviewMode;
+  if (!mapPreviewMode) { toggleMapPreview(); }
+  await new Promise(r => setTimeout(r, 400));
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const PAGE_W = 297; // A4 橫向
+  const PAGE_H = 210;
+  const MARGIN = 10;
+  const CONTENT_W = PAGE_W - MARGIN * 2;
+  const CONTENT_H = PAGE_H - MARGIN * 2;
+
+  let firstPage = true;
+
+  for (let di = 0; di < data.days.length; di++) {
+    showProgress(`截取 Day ${di + 1} 地圖…`, 10 + Math.round((di / data.days.length) * 80));
+    currentMapDay = di;
+    renderMap();
+    await new Promise(r => setTimeout(r, 1000)); // 等地圖渲染完成
+
+    // fitBounds
+    const dayStops = data.days[di].stops;
+    const coords = await Promise.all(dayStops.map(s => geocode(s.name, s)));
+    const valid = coords.filter(Boolean).map(c => [c.lat, c.lng]);
+    if (valid.length >= 2) {
+      leafletMap.fitBounds(L.latLngBounds(valid), { padding: [28, 28], maxZoom: 15, animate: false });
+    } else if (valid.length === 1) {
+      leafletMap.setView(valid[0], 14, { animate: false });
+    }
+    await new Promise(r => setTimeout(r, 700));
+
+    try {
+      const mapEl = document.getElementById('leaflet-map');
+      const canvas = await html2canvas(mapEl, { useCORS: true, scale: 2, logging: false, backgroundColor: '#e8f4f8' });
+      const imgDataUrl = canvas.toDataURL('image/png');
+      const imgW = CONTENT_W;
+      const imgH = Math.min(CONTENT_H - 18, (canvas.height / canvas.width) * imgW);
+
+      if (!firstPage) pdf.addPage();
+      firstPage = false;
+
+      // 標題列
+      const day = data.days[di];
+      pdf.setFillColor(26, 107, 138);
+      pdf.rect(MARGIN, MARGIN, CONTENT_W, 12, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${day.label}  ·  ${day.theme}`, MARGIN + 4, MARGIN + 8);
+
+      // 地圖圖片
+      pdf.addImage(imgDataUrl, 'PNG', MARGIN, MARGIN + 13, imgW, imgH - 13);
+    } catch(e) {
+      console.warn('地圖截圖失敗 Day', di, e);
+    }
+  }
+
+  // 還原狀態
+  currentMapDay = prevDay;
+  if (!wasPreview && mapPreviewMode) toggleMapPreview();
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(wasOnMap ? 'page-map' : 'page-itinerary').classList.add('active');
+  renderMap();
+
+  showProgress('正在下載 PDF…', 98);
+  await new Promise(r => setTimeout(r, 100));
+  const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
+  pdf.save(`${safeName}_地圖.pdf`);
+  hideProgress();
+  showToast('🗾 地圖 PDF 已下載！');
 }
 
 // ═══════════════════════════════════════════
@@ -3177,7 +3594,11 @@ function sanitizeData(d) {
     if (!Array.isArray(day.drives)) {
       return `${label}：缺少 drives 欄位`;
     }
-    if (!day.stops.every(s => typeof s.depart === 'string')) {
+    if (!day.stops.every((s, si) => {
+      // 最後一站不需要 depart（不顯示離開時間）
+      if (si === day.stops.length - 1) return true;
+      return typeof s.depart === 'string';
+    })) {
       return `${label}：有景點缺少出發時間（depart）`;
     }
     const expected = day.stops.length - 1;
@@ -3324,7 +3745,7 @@ function exportHTML() {
     <span id="nav-title-text">🏝 澎湖三日遊</span>
     <span class="nav-title-edit-icon">✏️</span>
   </span>
-  <button class="nav-btn active" onclick="showPage('itinerary')" aria-label="行程頁">📋 行程</button>
+  <button class="nav-btn active" id="nav-itinerary-btn" onclick="toggleItineraryView()" aria-label="行程頁">📋 行程</button>
   <button class="nav-btn" onclick="showPage('map')" aria-label="地圖頁">🗺 地圖</button>
   <button class="nav-btn" onclick="undo()" aria-label="復原上一步" title="復原上一步操作（Ctrl+Z）">↩ 復原</button>
   <div class="export-wrap">
@@ -3392,7 +3813,10 @@ function exportHTML() {
       <p>點擊景點可編輯，拖曳地圖縮放</p>
     </div>
     <div class="map-day-tabs" id="map-tabs"></div>
-    <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
+    <div style="display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:4px;">
+      <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleMapCollapse()">🗺 收合地圖 ▲</button>
+      <button class="map-preview-btn" id="map-preview-btn" onclick="toggleMapPreview()" title="閱覽模式：顯示匯出用的乾淨地圖">👁 閱覽模式</button>
+    </div>
     <div id="leaflet-map"></div>
   </div>
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
@@ -3411,15 +3835,22 @@ function exportHTML() {
       <div class="pdf-option-item selected" id="pdf-opt-with-map" onclick="selectPdfOption(\'with-map\')">
         <span class="pdf-option-icon">🗺</span>
         <div>
-          <div class="pdf-option-label">含地圖</div>
+          <div class="pdf-option-label">行程含地圖</div>
           <div class="pdf-option-desc">每天行程附上路線地圖截圖（較慢）</div>
         </div>
       </div>
       <div class="pdf-option-item" id="pdf-opt-no-map" onclick="selectPdfOption(\'no-map\')">
         <span class="pdf-option-icon">📋</span>
         <div>
-          <div class="pdf-option-label">不含地圖</div>
-          <div class="pdf-option-desc">僅行程文字，速度較快</div>
+          <div class="pdf-option-label">僅行程文字</div>
+          <div class="pdf-option-desc">不含地圖，速度較快</div>
+        </div>
+      </div>
+      <div class="pdf-option-item" id="pdf-opt-map-only" onclick="selectPdfOption(\'map-only\')">
+        <span class="pdf-option-icon">🗾</span>
+        <div>
+          <div class="pdf-option-label">轉檔地圖</div>
+          <div class="pdf-option-desc">將每天路線地圖截圖匯出為 PDF</div>
         </div>
       </div>
     </div>
@@ -3436,8 +3867,8 @@ function exportHTML() {
     <h3>✏️ 編輯景點</h3>
     <label>景點名稱</label>
     <input type="text" id="edit-name" placeholder="景點名稱">
-    <label>備註（可選）</label>
-    <input type="text" id="edit-note" placeholder="如：大菓葉・鯨魚洞">
+    <label>備註（可選，一行一條）</label>
+    <textarea id="edit-note" placeholder="每行一條備註，如：&#10;舅媽預定餐廳&#10;記得帶防曬" rows="3" style="resize:vertical;"></textarea>
     <label>📍 Google 座標（可選）</label>
     <input type="text" id="edit-coords" placeholder="從 Google Maps 右鍵複製，如：23.5712, 119.5634">
     <p id="coords-hint" style="font-size:0.72rem;margin-top:4px;min-height:1.1em"></p>
@@ -3595,71 +4026,104 @@ function closeImgExport() {
   document.getElementById('img-export-modal').classList.remove('open');
 }
 
-function buildCaptureHTML(di) {
+// ═══════════════════════════════════════════
+// IMAGE CAPTURE — 直接克隆行程頁真實 DOM
+// 原則：預覽就是匯出，不重建任何 HTML
+// ═══════════════════════════════════════════
+function buildCaptureCard(di) {
   const day = data.days[di];
-  let stopsHTML = '';
-  day.stops.forEach((stop, si) => {
-    const isLast = si === day.stops.length - 1;
-    const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
-    let arriveTag = '';
-    if (si > 0) {
-      const prevStop = day.stops[si - 1];
-      const drive = day.drives[si - 1] || 0;
-      const arrMins = timeToMinutes(prevStop.depart) + drive;
-      arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
-    }
-    const leaveTag = !isLast
-      ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
-      : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
-    stopsHTML += `
-      <div class="capture-stop-row ${isLast ? 'cap-last' : ''}">
-        <div class="cap-left">
-          <div class="cap-num">${si + 1}</div>
-          <div class="cap-line"></div>
-        </div>
-        <div class="cap-content">
-          <div class="cap-name">${escHtml(stop.name)}</div>
-          <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
-        </div>
-      </div>
-    `;
-    if (!isLast) {
-      const transitMode1 = (day.modes && day.modes[si]) || 'drive';
-      const transitIcon1 = transitMode1 === 'walk' ? '🚶' : '🚗';
-      stopsHTML += `<div class="cap-transit"><span class="cap-transit-text">${transitIcon1} 約 ${day.drives[si]} 分鐘</span></div>`;
-    }
+
+  // ── 1. 封面標題區（全行程標題 + 天數） ──
+  const header = document.createElement('div');
+  header.style.cssText = [
+    'background:linear-gradient(135deg,#1a6b8a,#5aa8c8)',
+    'color:white',
+    'padding:28px 32px 22px',
+    'text-align:center',
+    'font-family:"Noto Serif TC",serif',
+  ].join(';');
+  const titleText = data.title.replace(/^[\p{Emoji}\u{FE0F}\s]+/gu, '').trim() || data.title;
+  header.innerHTML = `
+    <div style="font-size:2rem;margin-bottom:8px;">🏝</div>
+    <div style="font-size:1.6rem;font-weight:700;letter-spacing:0.1em;margin-bottom:6px;">${escHtml(titleText)}</div>
+    <div style="font-size:0.85rem;opacity:0.85;letter-spacing:0.04em;font-family:'Noto Sans TC',sans-serif;">${escHtml(data.subtitle)}</div>
+    <div style="display:inline-block;background:rgba(255,255,255,0.22);padding:5px 18px;border-radius:20px;margin-top:12px;font-size:0.92rem;font-weight:600;letter-spacing:0.05em;">
+      🗓 ${escHtml(day.label)} · ${escHtml(day.theme)}
+    </div>`;
+
+  // ── 2. 克隆行程頁的真實 day-card DOM ──
+  // day-card 是 renderItinerary 產生的，已套用所有 CSS
+  const dayCards = document.querySelectorAll('#days-container .day-card');
+  const sourceCard = dayCards[di];
+  if (!sourceCard) return null;
+
+  const cloned = sourceCard.cloneNode(true);
+
+  // 套用「閱覽模式」：移除所有編輯用元素
+  const editSelectors = [
+    '.day-edit-btn','.day-delete-btn','.day-map-btn',
+    '.stop-delete','.stop-move-wrap',
+    '.add-stop-btn','.day-nav-card',
+    '.stop-action-btn',           // Maps / 導航按鈕
+    '.edit-icon',                 // 景點旁 ✏️
+    '.transit-mode-toggle',       // 交通方式切換
+    '.transit-nav-col',           // Maps/導航按鈕欄
+  ];
+  editSelectors.forEach(sel => {
+    cloned.querySelectorAll(sel).forEach(el => el.remove());
   });
 
-  const card = document.createElement('div');
-  card.className = 'capture-card';
-  // Inject CSS variables as resolved values so html2canvas can read them
-  card.style.cssText = 'position:fixed;left:-9999px;top:0;width:680px;' +
-    '--ocean:#1a6b8a;--sky:#5aa8c8;--sky-light:#a8d4e8;--sand:#f5ede0;--coral:#e07a5f;' +
+  // 移除 onclick（避免截圖區域有游標樣式殘留）
+  cloned.querySelectorAll('[onclick]').forEach(el => {
+    el.removeAttribute('onclick');
+    el.style.cursor = 'default';
+    el.style.pointerEvents = 'none';
+  });
+
+  // 移除 hover-only 不透明樣式（截圖時應顯示正常透明度）
+  cloned.querySelectorAll('.transit-dur-below').forEach(el => {
+    el.style.cursor = 'default';
+    el.style.pointerEvents = 'none';
+  });
+
+  // day-header 圓角補回（克隆後不影響，但確保邊框正確）
+  cloned.style.cssText += ';border-radius:20px;overflow:hidden;box-shadow:none;margin-bottom:0;';
+
+  // ── 3. 組合封面 + 行程卡 + 頁腳 ──
+  const wrap = document.createElement('div');
+  const CSS_VARS = '--ocean:#1a6b8a;--sky:#5aa8c8;--sky-light:#a8d4e8;--sand:#f5ede0;--coral:#e07a5f;' +
     '--dark:#1c2b35;--mid:#4a6274;--light:#eaf4f8;--white:#ffffff;--border:#cce0ea;' +
     '--green:#2d9e6b;--green-bg:#d8f0e4;--amber:#8a6200;--amber-bg:#fef3cd;' +
     '--amber-light:#b07c20;--amber-light-bg:#fff8e6;--red:#9b3020;--red-bg:#fce4e0;';
-  card.innerHTML = `
-    <div class="capture-header">
-      <span class="ch-emoji">🏝</span>
-      <div class="ch-title">${data.title.replace(/^[\p{Emoji}\s]+/u,'')}</div>
-      <div class="ch-sub">${data.subtitle}</div>
-      <div class="ch-day">🗓 ${day.label} · ${day.theme}</div>
-    </div>
-    <div class="capture-body">${stopsHTML}</div>
-    <div class="capture-footer">由互動行程產生 · ${data.title}</div>
-  `;
-  return card;
+  wrap.style.cssText = `position:fixed;left:-9999px;top:0;width:680px;background:white;${CSS_VARS}`;
+
+  const footer = document.createElement('div');
+  footer.style.cssText = 'background:#eaf4f8;padding:12px 24px;text-align:center;font-size:0.72rem;color:#4a6274;border-top:1px solid #cce0ea;font-family:"Noto Sans TC",sans-serif;';
+  footer.textContent = `由互動行程產生 · ${data.title}`;
+
+  wrap.appendChild(header);
+  wrap.appendChild(cloned);
+  wrap.appendChild(footer);
+  return wrap;
 }
 
 async function exportDayImg(di) {
   closeImgExport();
   showProgress(`正在產生 Day ${di + 1} 圖片…`, 30);
   await new Promise(r => setTimeout(r, 100));
-  const card = buildCaptureHTML(di);
+
+  // 確保行程頁可見（buildCaptureCard 需要 DOM 已渲染）
+  const wasOnItinerary = document.getElementById('page-itinerary').classList.contains('active');
+  if (!wasOnItinerary) {
+    document.getElementById('page-itinerary').classList.add('active');
+    await new Promise(r => setTimeout(r, 100));
+  }
+
+  const card = buildCaptureCard(di);
+  if (!card) { hideProgress(); showToast('⚠️ 圖片產生失敗，找不到行程卡片'); return; }
   document.body.appendChild(card);
   try {
     showProgress('正在渲染…', 60);
-    // Wait for fonts and rendering to settle
     if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
     await new Promise(r => setTimeout(r, 400));
     const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 680, logging: false, allowTaint: false, foreignObjectRendering: false });
@@ -3674,18 +4138,29 @@ async function exportDayImg(di) {
   } catch(e) {
     hideProgress();
     showToast('⚠️ 圖片產生失敗，請重試');
+    console.error(e);
   } finally {
     document.body.removeChild(card);
+    if (!wasOnItinerary) document.getElementById('page-itinerary').classList.remove('active');
   }
 }
 
 async function exportAllDaysImg() {
   closeImgExport();
   const total = data.days.length;
+
+  // 確保行程頁可見
+  const wasOnItinerary = document.getElementById('page-itinerary').classList.contains('active');
+  if (!wasOnItinerary) {
+    document.getElementById('page-itinerary').classList.add('active');
+    await new Promise(r => setTimeout(r, 150));
+  }
+
   for (let di = 0; di < total; di++) {
     showProgress(`正在產生 Day ${di + 1} / ${total} 圖片…`, Math.round((di / total) * 100));
     await new Promise(r => setTimeout(r, 150));
-    const card = buildCaptureHTML(di);
+    const card = buildCaptureCard(di);
+    if (!card) { console.warn('找不到 Day', di, '卡片'); continue; }
     document.body.appendChild(card);
     try {
       if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
@@ -3703,6 +4178,8 @@ async function exportAllDaysImg() {
       document.body.removeChild(card);
     }
   }
+
+  if (!wasOnItinerary) document.getElementById('page-itinerary').classList.remove('active');
   hideProgress();
   showToast(`✅ 全部 ${total} 天圖片已下載！`);
 }
@@ -3793,25 +4270,33 @@ async function exportPDF() {
     let stopsHTML = '';
     day.stops.forEach((stop, si) => {
       const isLast = si === day.stops.length - 1;
-      const noteTag = stop.note ? `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fce4e0;color:#9b3020;">${escHtml(stop.note)}</span>` : '';
+      const noteTag = stop.note
+        ? stop.note.split('\n').map(n => n.trim()).filter(Boolean)
+            .map(n => `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fce4e0;color:#9b3020;display:inline-block;">${escHtml(n)}</span>`).join(' ')
+        : '';
       let arriveTag = '';
+      let pdfModeIcon = '';
       if (si > 0) {
         const prev = day.stops[si - 1];
         const drv = day.drives[si - 1] || 0;
+        pdfModeIcon = (day.modes&&day.modes[si-1])==='walk'?'🚶':'🚗';
         arriveTag = `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fef3cd;color:#8a6200;">抵達 ${minutesToTime(timeToMinutes(prev.depart) + drv)}</span>`;
       }
       const leaveTag = !isLast
         ? `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fff8e6;color:#b07c20;">離開 ${stop.depart}</span>`
-        : `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#fef3cd;color:#8a6200;">抵達 ${stop.depart}</span>`;
-      // 先渲染交通列（在景點之前）
+        : '';
+      const stayMins = stop.stay || 0;
+      const stayTagPdf = (!isLast && stayMins)
+        ? `<span style="font-size:0.68rem;padding:2px 7px;border-radius:8px;background:#d8f0e4;color:#2d9e6b;">${stayLabel(stayMins)}</span>`
+        : '';
+      // 交通列（在景點之前）
       if (si > 0) {
-        const modeIcon = (day.modes&&day.modes[si-1])==='walk'?'🚶':'🚗';
         stopsHTML += `
           <div style="display:flex;align-items:stretch;">
             <div style="display:flex;flex-direction:column;align-items:center;width:30px;flex-shrink:0;margin-right:12px;">
               <div style="width:2px;background:#cce0ea;height:6px;"></div>
               <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-                <div style="width:20px;height:20px;border-radius:50%;background:#eaf4f8;border:1.5px dashed #5aa8c8;display:flex;align-items:center;justify-content:center;font-size:0.65rem;">${modeIcon}</div>
+                <div style="width:20px;height:20px;border-radius:50%;background:#eaf4f8;border:1.5px dashed #5aa8c8;display:flex;align-items:center;justify-content:center;font-size:0.65rem;">${pdfModeIcon}</div>
                 <div style="font-size:0.6rem;color:#1a6b8a;background:#eaf4f8;padding:1px 5px;border-radius:6px;white-space:nowrap;">約 ${day.drives[si-1]} 分鐘</div>
               </div>
               <div style="width:2px;background:#cce0ea;flex:1;min-height:6px;"></div>
@@ -3827,7 +4312,8 @@ async function exportPDF() {
           </div>
           <div style="flex:1;padding:10px 0 8px;${!isLast ? 'border-bottom:1px solid #f5f5f5;' : ''}">
             <div style="font-family:\'Noto Serif TC\',serif;font-size:0.9rem;font-weight:600;color:#1c2b35;">${escHtml(stop.name)}</div>
-            <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;">${arriveTag}${leaveTag}${noteTag}</div>
+            <div style="display:flex;gap:5px;margin-top:5px;flex-wrap:wrap;">${arriveTag}${leaveTag}${stayTagPdf}</div>
+            ${noteTag ? `<div style="display:flex;gap:4px;margin-top:3px;flex-wrap:wrap;">${noteTag}</div>` : ''}
           </div>
         </div>`;
     });
@@ -3895,23 +4381,32 @@ function buildPrintHTML(mapImgsByDay) {
     let stopsHTML = '';
     day.stops.forEach((stop, si) => {
       const isLast = si === day.stops.length - 1;
-      const noteTag = stop.note ? `<span class="tag tag-note">${escHtml(stop.note)}</span>` : '';
+      const noteTag = stop.note
+        ? stop.note.split('\n').map(n => n.trim()).filter(Boolean)
+            .map(n => `<span class="tag tag-note">${escHtml(n)}</span>`).join('')
+        : '';
+      const notesRowHTML = noteTag ? `<div class="cap-tags" style="margin-top:3px;">${noteTag}</div>` : '';
       let arriveTag = '';
+      let printModeIcon = '';
       if (si > 0) {
         const prevStop = day.stops[si - 1];
         const drive = day.drives[si - 1] || 0;
         const arrMins = timeToMinutes(prevStop.depart) + drive;
+        printModeIcon = (day.modes && day.modes[si-1]) === 'walk' ? '🚶' : '🚗';
         arriveTag = `<span class="tag tag-arrive">抵達 ${minutesToTime(arrMins)}</span>`;
       }
       const leaveTag = !isLast
         ? `<span class="tag tag-leave">離開 ${stop.depart}</span>`
-        : `<span class="tag tag-arrive">抵達 ${stop.depart}</span>`;
+        : '';
+      const stayMins = stop.stay || 0;
+      const stayTagPrint = (!isLast && stayMins)
+        ? `<span class="tag" style="background:#d8f0e4;color:#2d9e6b;">${stayLabel(stayMins)}</span>`
+        : '';
       if (si > 0) {
-        const modeIcon = (day.modes && day.modes[si-1]) === 'walk' ? '🚶' : '🚗';
         stopsHTML += `
           <div class="cap-transit">
             <div class="cap-transit-icon-col">
-              <div class="cap-transit-icon">${modeIcon}</div>
+              <div class="cap-transit-icon">${printModeIcon}</div>
               <span class="cap-transit-text">約 ${day.drives[si-1]} 分鐘</span>
             </div>
           </div>`;
@@ -3921,7 +4416,8 @@ function buildPrintHTML(mapImgsByDay) {
           <div class="cap-left"><div class="cap-num">${si + 1}</div><div class="cap-line"></div></div>
           <div class="cap-content">
             <div class="cap-name">${escHtml(stop.name)}</div>
-            <div class="cap-tags">${arriveTag}${leaveTag}${noteTag}</div>
+            <div class="cap-tags">${arriveTag}${leaveTag}${stayTagPrint}</div>
+            ${notesRowHTML}
           </div>
         </div>
       `;
