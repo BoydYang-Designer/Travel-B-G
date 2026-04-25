@@ -29,6 +29,7 @@
 
 
 
+
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -2115,6 +2116,7 @@ a.map-stop-letter:hover {
 
 
 
+
 </style>
 </head>
 <body>
@@ -2201,23 +2203,6 @@ a.map-stop-letter:hover {
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
   <div class="map-scroll-body">
     <div class="map-stop-list" id="map-stop-list"></div>
-    <!-- 手機取得座標教學 -->
-    <div class="map-coords-guide">
-      <div class="map-coords-guide-header" onclick="this.parentElement.classList.toggle('open')">
-        <span>📱 手機如何在 Google Maps 複製座標？</span>
-        <span class="map-coords-guide-arrow">▸</span>
-      </div>
-      <div class="map-coords-guide-body">
-        <ol class="map-coords-guide-steps">
-          <li>開啟 <strong>Google Maps</strong> App</li>
-          <li>搜尋景點名稱，點擊地圖上的正確位置</li>
-          <li>畫面下方出現景點資訊卡，<strong>長按</strong>卡片最頂端的座標數字</li>
-          <li>選擇「<strong>複製座標</strong>」</li>
-          <li>回到此頁，點景點旁的 <strong>貼上</strong> 按鈕即可</li>
-        </ol>
-        <div class="map-coords-guide-tip">💡 貼上後地圖球標會立即更新定位，不需另外儲存</div>
-      </div>
-    </div>
     <div id="map-nav-btn-wrap"></div>
   </div>
 </div>
@@ -2404,10 +2389,11 @@ a.map-stop-letter:hover {
 
 
 
+
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 流星· 看海· 觀星","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠18:00開兩台車來機場接大家\n租車行電話:06-9221777\n機車(不指定，皆為125cc)車款*1台*1天，費用300元\nB組(Altis同款車)*1台*2天，優惠價3400元\nC組(休旅車款)*1台*2天，優惠價3800元\n加購安全座椅*2個*2天，費用400元\n總計：300+3400+3800+400=7900元\n租車已預付1900訂金,取車沒問題後須付6000尾款.\n取機車要準備機車駕照1張。\n取2台汽車要準備2張汽車駕照。\n","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true,"_showStay":false},{"name":"🏨 鎖港郵局會館","depart":"19:10","stay":35,"note":"先辦理入住，放行李，稍微休息，然後去找地方吃晚餐","arrive":"18:35","_departUserSet":true,"coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_showStay":true},{"name":"馬公鎖港郵局-附近吃晚餐","depart":"20:50","stay":90,"note":"鎮港附近餐廳 ：\n 澎湖小卷麵館， 山水牛肉麵，1891食棧...ect","coords":{"lat":23.520108916449576,"lng":119.59424867867693},"arrive":"19:20","_departUserSet":true,"_showStay":true},{"name":"山水沙灘","depart":"22:40","stay":90,"note":"山水觀星樓看星空流星（視天氣而定）\n約每小時有機會看到1-3顆流星\n紅色玻璃紙手電筒","arrive":"21:10","_departUserSet":true,"coords":{"lat":23.514771381777205,"lng":119.59078618577357},"_showStay":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"23:00","_departUserSet":true}],"drives":[15,10,20,20],"modes":["drive","walk","walk","walk"]},{"label":"Day 2 · 4/27（一）","theme":"沙灘踩水·摩西分海 ·名店餐廳·市區巡禮 ·花火節· ","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"09:30","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"隘門沙滩","depart":"10:45","stay":60,"note":"隘門沙灘停車場(收費)\n踩水拍照打卡","arrive":"09:45","_departUserSet":true,"_showStay":true},{"name":"7-ELEVEn 永興順門市","depart":"11:10","stay":20,"note":"7-11 買簡便中餐,帶去摩西分海吃","arrive":"10:50","_departUserSet":true,"coords":{"lat":23.562918201806546,"lng":119.63643472383379},"_showStay":true},{"name":"奎壁山遊憩區停車場-摩西分海","depart":"13:20","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28\n停車費2小時內40元, 超過後每半小時20元\n烈日當頭注意防曬","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:20","_departUserSet":true,"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"13:55","stay":10,"note":"市區當天有花火煙火試放，提早到市區找停車位","arrive":"13:45","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363},"_showStay":true},{"name":"澎湖水下考古工作站+街上買伴手禮+文康商圈吃點心","depart":"17:35","stay":200,"note":"","arrive":"14:15","_departUserSet":true,"coords":{"lat":23.563465579249893,"lng":119.56414989194096},"_showStay":true},{"name":"新村美食館-晚餐 18:00","depart":"19:30","stay":115,"note":"大家於17:50 在餐廳門口集合","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"17:50","_departUserSet":true,"_showStay":false},{"name":"觀音亭親水遊憩區","depart":"21:30","stay":105,"note":"前往觀音亭找好位子看煙火\n花火施放時間： 21:00 (施放10分鐘)","arrive":"19:45","_departUserSet":true,"coords":{"lat":23.56885218957415,"lng":119.56236662383391},"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"22:00","stay":10,"note":"市區當天有花火煙火試放，提早到進市區找停車位","arrive":"21:50","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"22:15","_departUserSet":true}],"drives":[15,5,10,25,20,15,15,20,15,10],"modes":["drive","drive","drive","drive","walk","walk","walk","walk","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"澎湖水族館深度體驗·返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"08:30","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"澎湖水族館-門票300","depart":"13:30","stay":270,"note":"大洋池餵食秀 (最熱門)： 每日 11:00-11:15、15:00-15:15。\n觸摸池活動： 每日 10:00-11:00、13:30-14:00、15:30-16:00。\n魚魚啄菜球 (礁岩池)： 每日 09:30-10:30、14:00-15:00。","arrive":"09:00","_departUserSet":true,"coords":{"lat":23.65016972434755,"lng":119.60394526931364},"_showStay":true},{"name":"✈️ 澎湖機場","depart":"14:10","stay":10,"note":"小茜一行人班機起飛 15:40 \n小傑一行人班機起飛 16:50 \n當天還車路行程需要再討論.","arrive":"14:00","_departUserSet":true}],"drives":[30,30,10],"modes":["drive","drive","drive"]}]};
+const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 流星· 看海· 觀星","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠18:00開兩台車來機場接大家\n租車行電話:06-9221777\n機車(不指定，皆為125cc)車款*1台*1天，費用300元\nB組(Altis同款車)*1台*2天，優惠價3400元\nC組(休旅車款)*1台*2天，優惠價3800元\n加購安全座椅*2個*2天，費用400元\n總計：300+3400+3800+400=7900元\n租車已預付1900訂金,取車沒問題後須付6000尾款.\n取機車要準備機車駕照1張。\n取2台汽車要準備2張汽車駕照。\n","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true,"_showStay":false},{"name":"🏨 鎖港郵局會館","depart":"19:10","stay":35,"note":"先辦理入住，放行李，稍微休息，然後去找地方吃晚餐","arrive":"18:35","_departUserSet":true,"coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_showStay":true},{"name":"馬公鎖港郵局-附近吃晚餐","depart":"20:50","stay":90,"note":"鎮港附近餐廳 ：\n 澎湖小卷麵館， 山水牛肉麵，1891食棧...ect","coords":{"lat":23.520108916449576,"lng":119.59424867867693},"arrive":"19:20","_departUserSet":true,"_showStay":true},{"name":"山水沙灘","depart":"22:40","stay":90,"note":"山水觀星樓看星空流星（視天氣而定）\n約每小時有機會看到1-3顆流星\n紅色玻璃紙手電筒","arrive":"21:10","_departUserSet":true,"coords":{"lat":23.514771381777205,"lng":119.59078618577357},"_showStay":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"23:00","_departUserSet":true}],"drives":[15,10,20,20],"modes":["drive","walk","walk","walk"]},{"label":"Day 2 · 4/27（一）","theme":"沙灘踩水·摩西分海 ·名店餐廳·市區巡禮 ·花火節· ","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"09:30","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"隘門沙滩","depart":"10:45","stay":60,"note":"隘門沙灘停車場(收費)\n踩水拍照打卡","arrive":"09:45","_departUserSet":true,"_showStay":true},{"name":"7-ELEVEn 永興順門市","depart":"11:10","stay":20,"note":"7-11 買簡便中餐,帶去摩西分海吃","arrive":"10:50","_departUserSet":true,"coords":{"lat":23.562918201806546,"lng":119.63643472383379},"_showStay":true},{"name":"奎壁山遊憩區停車場-摩西分海","depart":"13:20","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28\n停車費2小時內40元, 超過後每半小時20元\n烈日當頭注意防曬","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:20","_departUserSet":true,"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"13:55","stay":10,"note":"市區當天有花火煙火試放，提早到市區找停車位","arrive":"13:45","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363},"_showStay":true},{"name":"澎湖水下考古工作站+街上買伴手禮+文康商圈吃點心","depart":"17:35","stay":200,"note":"","arrive":"14:15","_departUserSet":true,"coords":{"lat":23.563465579249893,"lng":119.56414989194096},"_showStay":true},{"name":"新村美食館-晚餐 18:00","depart":"19:30","stay":100,"note":"大家於17:50 在餐廳門口集合","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"17:50","_departUserSet":true,"_showStay":true},{"name":"觀音亭親水遊憩區","depart":"21:30","stay":105,"note":"前往觀音亭找好位子看煙火\n花火施放時間： 21:00 (施放10分鐘)","arrive":"19:45","_departUserSet":true,"coords":{"lat":23.56885218957415,"lng":119.56236662383391},"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"22:00","stay":10,"note":"","arrive":"21:50","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363},"_showStay":false},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"22:15","_departUserSet":true}],"drives":[15,5,10,25,20,15,15,20,15,10],"modes":["drive","drive","drive","drive","walk","walk","walk","walk","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"澎湖水族館深度體驗·返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"08:30","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"澎湖水族館-門票300","depart":"13:30","stay":270,"note":"大洋池餵食秀 (最熱門)： 每日 11:00-11:15、15:00-15:15。\n觸摸池活動： 每日 10:00-11:00、13:30-14:00、15:30-16:00。\n魚魚啄菜球 (礁岩池)： 每日 09:30-10:30、14:00-15:00。","arrive":"09:00","_departUserSet":true,"coords":{"lat":23.65016972434755,"lng":119.60394526931364},"_showStay":true},{"name":"✈️ 澎湖機場","depart":"14:10","stay":10,"note":"小茜一行人班機起飛 15:40 \n小傑一行人班機起飛 16:50 \n當天還車路行程需要再討論.","arrive":"14:00","_departUserSet":true}],"drives":[30,30,10],"modes":["drive","drive","drive"]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -4703,17 +4689,19 @@ function buildCaptureCard(di) {
   header.style.cssText = [
     'background:linear-gradient(135deg,#1a6b8a,#5aa8c8)',
     'color:white',
-    'padding:28px 32px 22px',
-    'text-align:center',
+    'padding:22px 28px 18px',
+    'text-align:left',
     'font-family:"Noto Serif TC",serif',
   ].join(';');
   const titleText = data.title.replace(/^[\p{Emoji}\u{FE0F}\s]+/gu, '').trim() || data.title;
   header.innerHTML = `
-    <div style="font-size:2rem;margin-bottom:8px;">🏝</div>
-    <div style="font-size:1.6rem;font-weight:700;letter-spacing:0.1em;margin-bottom:6px;">${escHtml(titleText)}</div>
-    <div style="font-size:0.85rem;opacity:0.85;letter-spacing:0.04em;font-family:'Noto Sans TC',sans-serif;">${escHtml(data.subtitle)}</div>
-    <div style="display:inline-block;background:rgba(255,255,255,0.22);padding:5px 18px;border-radius:20px;margin-top:12px;font-size:0.92rem;font-weight:600;letter-spacing:0.05em;">
-      🗓 ${escHtml(day.label)} · ${escHtml(day.theme)}
+    <div style="font-size:1.4rem;font-weight:700;letter-spacing:0.08em;margin-bottom:4px;">${escHtml(titleText)}</div>
+    <div style="font-size:0.82rem;opacity:0.85;letter-spacing:0.04em;font-family:'Noto Sans TC',sans-serif;margin-bottom:12px;">${escHtml(data.subtitle)}</div>
+    <div style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.22);padding:7px 18px;border-radius:20px;font-family:'Noto Serif TC',serif;font-size:0.92rem;font-weight:700;letter-spacing:0.05em;">
+      <span>🗓</span>
+      <span>${escHtml(day.label)}</span>
+      <span style="opacity:0.6;font-weight:400;">·</span>
+      <span style="font-family:'Noto Sans TC',sans-serif;font-size:0.8rem;font-weight:400;opacity:0.9;">${escHtml(day.theme)}</span>
     </div>`;
 
   // ── 2. 克隆行程頁的真實 day-card DOM ──
@@ -4723,6 +4711,10 @@ function buildCaptureCard(di) {
   if (!sourceCard) return null;
 
   const cloned = sourceCard.cloneNode(true);
+
+  // 移除 day-header（封面標題區已包含此資訊，避免重複）
+  const clonedHeader = cloned.querySelector('.day-header');
+  if (clonedHeader) clonedHeader.remove();
 
   // 套用「閱覽模式」：移除所有編輯用元素
   const editSelectors = [
@@ -4751,8 +4743,8 @@ function buildCaptureCard(di) {
     el.style.pointerEvents = 'none';
   });
 
-  // day-header 圓角補回（克隆後不影響，但確保邊框正確）
-  cloned.style.cssText += ';border-radius:20px;overflow:hidden;box-shadow:none;margin-bottom:0;';
+  // day-card 樣式調整（已移除 day-header，直接從景點列表開始）
+  cloned.style.cssText += ';border-radius:0 0 20px 20px;overflow:hidden;box-shadow:none;margin-bottom:0;';
 
   // ── 3. 組合封面 + 行程卡 + 頁腳 ──
   const wrap = document.createElement('div');
@@ -4760,15 +4752,10 @@ function buildCaptureCard(di) {
     '--dark:#1c2b35;--mid:#4a6274;--light:#eaf4f8;--white:#ffffff;--border:#cce0ea;' +
     '--green:#2d9e6b;--green-bg:#d8f0e4;--amber:#8a6200;--amber-bg:#fef3cd;' +
     '--amber-light:#b07c20;--amber-light-bg:#fff8e6;--red:#9b3020;--red-bg:#fce4e0;';
-  wrap.style.cssText = `position:fixed;left:-9999px;top:0;width:680px;background:white;${CSS_VARS}`;
-
-  const footer = document.createElement('div');
-  footer.style.cssText = 'background:#eaf4f8;padding:12px 24px;text-align:center;font-size:0.72rem;color:#4a6274;border-top:1px solid #cce0ea;font-family:"Noto Sans TC",sans-serif;';
-  footer.textContent = `由互動行程產生 · ${data.title}`;
+  wrap.style.cssText = `position:fixed;left:-9999px;top:0;width:520px;background:white;${CSS_VARS}`;
 
   wrap.appendChild(header);
   wrap.appendChild(cloned);
-  wrap.appendChild(footer);
   return wrap;
 }
 
@@ -4791,7 +4778,7 @@ async function exportDayImg(di) {
     showProgress('正在渲染…', 60);
     if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
     await new Promise(r => setTimeout(r, 400));
-    const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 680, logging: false, allowTaint: false, foreignObjectRendering: false });
+    const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 520, logging: false, allowTaint: false, foreignObjectRendering: false });
     showProgress('正在下載…', 90);
     const a = document.createElement('a');
     const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
@@ -4830,7 +4817,7 @@ async function exportAllDaysImg() {
     try {
       if (document.fonts && document.fonts.ready) { await document.fonts.ready; }
       await new Promise(r => setTimeout(r, 400));
-      const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 680, logging: false, allowTaint: false, foreignObjectRendering: false });
+      const canvas = await html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 520, logging: false, allowTaint: false, foreignObjectRendering: false });
       const a = document.createElement('a');
       const safeName = data.title.replace(/[\u{1F300}-\u{1FFFF}\s]/gu,'').replace(/[^\w\u4e00-\u9fff]/g,'') || '行程';
       a.download = `${safeName}_Day${di + 1}.png`;
@@ -5191,6 +5178,7 @@ document.addEventListener('keydown', function(e) {
 renderAll();
 // 初始進入行程頁為閱讀模式
 _applyItineraryMode();
+
 
 
 
