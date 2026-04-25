@@ -24,9 +24,6 @@
 
 
 
-
-
-
 :root {
   --ocean: #1a6b8a;
   --sky: #5aa8c8;
@@ -723,63 +720,6 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 .b-time-text { font-size: 12px; color: var(--mid); font-weight: 500; }
 .b-time-val  { font-size: 12px; color: var(--dark); font-weight: 700; }
 .b-wrap ~ .stop-name { padding-top: 0; }
-
-/* ── 停留時間標籤（淡黃色）── */
-.b-stay-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #7a5c00;
-  background: #fffbe6;
-  border: 1px solid #f0dc90;
-  border-radius: 7px;
-  padding: 1px 7px;
-  white-space: nowrap;
-  letter-spacing: 0.01em;
-}
-
-/* 停留時間顯示切換按鈕（已移至編輯 modal，此處保留空白） */
-
-/* ── Modal 停留顯示切換按鈕 ── */
-.modal-stay-toggle {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  border: 1.5px solid var(--border);
-  background: white;
-  color: var(--mid);
-  font-family: 'Noto Sans TC', sans-serif;
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: all 0.18s;
-  white-space: nowrap;
-  margin-top: 8px;
-  width: 100%;
-  justify-content: center;
-}
-.modal-stay-toggle:hover {
-  border-color: #d4a800;
-  background: #fffbe6;
-  color: #7a5c00;
-}
-.modal-stay-toggle.is-on {
-  background: #fffbe6;
-  border-color: #d4a800;
-  color: #7a5c00;
-  font-weight: 600;
-}
-.modal-stay-toggle .mst-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: #ccc;
-  flex-shrink: 0;
-  transition: background 0.18s;
-}
-.modal-stay-toggle.is-on .mst-dot { background: #d4a800; }
 
 /* ── 景點行內小按鈕（Maps / 導航）共用基底 ── */
 .stop-action-btn {
@@ -2025,9 +1965,6 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 
 
 
-
-
-
 </style>
 </head>
 <body>
@@ -2185,10 +2122,6 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
         <input type="number" id="edit-stay" min="0" max="600" step="5" placeholder="分鐘" oninput="onStayChange()">
       </div>
     </div>
-    <button type="button" class="modal-stay-toggle" id="modal-stay-toggle" onclick="toggleModalStayDisplay()">
-      <span class="mst-dot"></span>
-      <span id="modal-stay-toggle-label">停留時間：不顯示於行程</span>
-    </button>
     <p id="modal-arrival-hint" style="font-size:0.74rem;color:var(--mid);margin-top:6px;min-height:1.2em"></p>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -2295,13 +2228,10 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 
 
 
-
-
-
 // ═══════════════════════════════════════════
 // DEFAULT DATA
 // ═══════════════════════════════════════════
-const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠18:00開兩台車來機場接大家\n租車行電話:06-9221777","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"19:10","stay":40,"note":"先辦理入住，放行李,稍微修整，然後去找地方吃晚餐","arrive":"18:35","_departUserSet":true,"coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_showStay":true},{"name":"馬公鎖港郵局-附近吃晚餐","depart":"20:50","stay":90,"note":"鎮港附近餐廳 ：\n 澎湖小卷麵館， 山水牛肉麵，1891食棧...ect","coords":{"lat":23.520108916449576,"lng":119.59424867867693},"arrive":"19:20","_departUserSet":true,"_showStay":true},{"name":"山水沙灘","depart":"22:40","stay":90,"note":"山水觀星樓看星空流星（視天氣而定）\n約每小時有機會看到1-3顆流星\n紅色玻璃紙手電筒","arrive":"21:10","_departUserSet":true,"coords":{"lat":23.514771381777205,"lng":119.59078618577357},"_showStay":true},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"23:00","_departUserSet":true}],"drives":[15,10,20,20],"modes":["drive","walk","walk","walk"]},{"label":"Day 2 · 4/27（一）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"09:30","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"隘門沙滩","depart":"10:45","stay":60,"note":"隘門沙灘停車場(收費)\n踩水拍照打卡","arrive":"09:45","_departUserSet":true,"_showStay":true},{"name":"7-ELEVEn 永興順門市","depart":"11:10","stay":20,"note":"7-11 買簡便中餐,帶去摩西分海吃","arrive":"10:50","_departUserSet":true,"coords":{"lat":23.562918201806546,"lng":119.63643472383379},"_showStay":true},{"name":"奎壁山遊憩區停車場-摩西分海","depart":"13:20","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28\n停車費2小時內40元, 超過後每半小時20元\n烈日當頭注意防曬","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:20","_departUserSet":true,"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"13:55","stay":10,"note":"市區當天有花火煙火試放，提早到進市區找停車位","arrive":"13:45","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363},"_showStay":true},{"name":"澎湖水下考古工作站+街上買伴手禮+文康商圈吃點心","depart":"17:35","stay":200,"note":"","arrive":"14:15","_departUserSet":true,"coords":{"lat":23.563465579249893,"lng":119.56414989194096},"_showStay":true},{"name":"新村美食館-晚餐 18:00","depart":"19:30","stay":115,"note":"大家於17:50 在餐廳門口集合","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"17:50","_departUserSet":true,"_showStay":false},{"name":"觀音亭親水遊憩區","depart":"21:30","stay":105,"note":"前往觀音亭找好位子看煙火\n花火施放時間： 21:00 (施放10分鐘)","arrive":"19:45","_departUserSet":true,"coords":{"lat":23.56885218957415,"lng":119.56236662383391},"_showStay":true},{"name":"澎湖縣南海立體停車場","depart":"22:00","stay":10,"note":"市區當天有花火煙火試放，提早到進市區找停車位","arrive":"21:50","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"22:15","_departUserSet":true}],"drives":[15,5,10,25,20,15,15,20,15,10],"modes":["drive","drive","drive","drive","walk","walk","walk","walk","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"08:30","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true,"_showStay":true},{"name":"澎湖水族館-門票300","depart":"13:30","stay":270,"note":"大洋池餵食秀 (最熱門)： 每日 11:00-11:15、15:00-15:15。\n觸摸池活動： 每日 10:00-11:00、13:30-14:00、15:30-16:00。\n魚魚啄菜球 (礁岩池)： 每日 09:30-10:30、14:00-15:00。","arrive":"09:00","_departUserSet":true,"coords":{"lat":23.65016972434755,"lng":119.60394526931364},"_showStay":true},{"name":"✈️ 澎湖機場","depart":"14:10","stay":10,"note":"小茜一行人班機起飛 15:40 \n小傑一行人班機起飛 16:50 \n當天還車路行程需要再討論.","arrive":"14:00","_departUserSet":true}],"drives":[30,30,10],"modes":["drive","drive","drive"]}]};
+const DEFAULT_DATA = {"title":"澎湖三日遊","subtitle":"4/26（日）— 4/28（二）","days":[{"label":"Day 1 · 4/26（日）","theme":"抵達 · 夜遊市區","stops":[{"name":"✈️ 澎湖機場","depart":"18:20","stay":0,"note":"正芳與小惠18:00開兩台車來機場接大家\n租車行電話:06-9221777","coords":{"lat":23.561020574753133,"lng":119.62948594417897},"_departUserSet":true},{"name":"🏨 鎖港郵局會館","depart":"19:10","stay":40,"note":"先辦理入住，放行李，然後去找地方吃晚餐","arrive":"18:35","_departUserSet":true,"coords":{"lat":23.5253088606287,"lng":119.59690207116421}},{"name":"馬公鎖港郵局-附近吃晚餐","depart":"21:20","stay":120,"note":"鎮港附近餐廳 ：\n 澎湖小卷麵館， 山水牛肉麵，1891食棧...ect","coords":{"lat":23.520108916449576,"lng":119.59424867867693},"arrive":"19:20","_departUserSet":true},{"name":"山水沙灘","depart":"21:45","stay":60,"note":"山水觀星樓看星空流星（視天氣而定）\n紅色玻璃紙手電筒","arrive":"21:40","_departUserSet":true,"coords":{"lat":23.514771381777205,"lng":119.59078618577357}},{"name":"🏨 鎖港郵局會館","depart":"21:45","stay":0,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"22:05","_departUserSet":true}],"drives":[15,10,20,20],"modes":["drive","walk","walk","walk"]},{"label":"Day 2 · 4/27（一）","theme":"西嶼半日遊 · 花火節","stops":[{"name":"🏨 鎖港郵局會館 吃完早餐從容出發","depart":"10:00","stay":0,"note":"早餐附近吃或買回來吃","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"隘門沙滩","depart":"10:55","stay":40,"note":"隘門沙灘停車場(收費)\n踩水拍照打卡","arrive":"10:15","_departUserSet":true},{"name":"7-ELEVEn 永興順門市","depart":"11:20","stay":20,"note":"7-11 買中餐,帶去摩西分海吃","arrive":"11:00","_departUserSet":true,"coords":{"lat":23.562918201806546,"lng":119.63643472383379}},{"name":"奎壁山遊憩區停車場-摩西分海","depart":"13:30","stay":120,"note":"日出05:31\t分海11:56\t合海17:06\t日落18:28\n停車費2小時內40元, 超過後每半小時20元\n烈日當頭注意防曬","coords":{"lat":23.598287050106705,"lng":119.67247716931364},"arrive":"11:30","_departUserSet":true},{"name":"澎湖縣南海立體停車場","depart":"14:05","stay":10,"note":"市區當天有花火煙火試放，提早到進市區找停車位","arrive":"13:55","_departUserSet":true,"coords":{"lat":23.567468297852084,"lng":119.5706976124363}},{"name":"澎湖水下考古工作站+街上買伴手禮+文康商圈吃點心","depart":"17:30","stay":140,"note":"","arrive":"14:20","_departUserSet":true,"coords":{"lat":23.563465579249893,"lng":119.56414989194096}},{"name":"新村美食館-晚餐 18:00","depart":"19:30","stay":115,"note":"大家於17:50 在餐廳門口集合","coords":{"lat":23.57048805880574,"lng":119.56947418650736},"arrive":"17:45","_departUserSet":true},{"name":"觀音亭親水遊憩區","depart":"21:30","stay":105,"note":"前往觀音亭找好位子看煙火\n花火施放時間： 21:00 (施放10分鐘)","arrive":"19:45","_departUserSet":true,"coords":{"lat":23.56885218957415,"lng":119.56236662383391}},{"name":"🏨 鎖港郵局會館","depart":"20:45","stay":60,"note":"梳洗","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"arrive":"21:50","_departUserSet":true}],"drives":[15,5,10,25,15,15,15,20,10],"modes":["drive","drive","drive","drive","walk","walk","walk","drive","drive"]},{"label":"Day 3 · 4/28（二）","theme":"古蹟探訪 · 返程","stops":[{"name":"🏨 鎖港郵局會館","depart":"09:30","stay":0,"note":"早餐附近吃或買回來吃,退房行李上車","coords":{"lat":23.5253088606287,"lng":119.59690207116421},"_departUserSet":true},{"name":"澎湖水族館-門票300","depart":"13:30","stay":220,"note":"大洋池餵食秀 (最熱門)： 每日 11:00-11:15、15:00-15:15。\n觸摸池活動： 每日 10:00-11:00、13:30-14:00、15:30-16:00。\n魚魚啄菜球 (礁岩池)： 每日 09:30-10:30、14:00-15:00。","arrive":"09:50","_departUserSet":true,"coords":{"lat":23.65016972434755,"lng":119.60394526931364}},{"name":"✈️ 澎湖機場","depart":"14:00","stay":0,"note":"小茜一行人班機起飛 15:40 \n小傑一行人班機起飛 16:50 ","arrive":"14:00","_departUserSet":true},{"name":"澎湖六合租車-石泉店","depart":"14:00","stay":30,"note":"先還一台車,繼續使用另一台車.\n車行電話:06-9221777","arrive":"14:10","_departUserSet":true,"coords":{"lat":23.561463705191535,"lng":119.5944892153432}}],"drives":[20,30,10],"modes":["drive","drive","drive"]}]};
 
 const STORAGE_KEY = 'itinerary_data';
 
@@ -2495,29 +2425,17 @@ function renderStops(di) {
             <span class="b-transit-time">約 ${drive} 分鐘</span>
           </div>
         </div>`;
-      // 抵達/離開 下方（含停留時間）
-      const stayMins = stop.stay || 0;
-      const showStay = stop._showStay && stayMins > 0 && !isLast;
-      const stayTagHTML = showStay
-        ? `<span class="b-stay-tag">⏱ ${stayLabel(stayMins)}</span>`
-        : '';
+      // 抵達/離開 下方
       timesHTML = `
         <div class="b-times-below">
           <div class="b-time-row"><div class="b-dot b-dot-arrive"></div><span class="b-time-text">抵達</span><span class="b-time-val">${minutesToTime(arrMins)}</span></div>
           ${leaveItem}
-          ${stayTagHTML}
         </div>`;
     } else if (!isLast) {
       // 第一站只有離開時間，放名稱下方
-      const stayMins0 = stop.stay || 0;
-      const showStay0 = stop._showStay && stayMins0 > 0;
-      const stayTagHTML0 = showStay0
-        ? `<span class="b-stay-tag">⏱ ${stayLabel(stayMins0)}</span>`
-        : '';
       timesHTML = `
         <div class="b-times-below">
           <div class="b-time-row"><div class="b-dot b-dot-leave"></div><span class="b-time-text">離開</span><span class="b-time-val">${stop.depart}</span></div>
-          ${stayTagHTML0}
         </div>`;
     }
 
@@ -3273,8 +3191,6 @@ function editStop(di, si) {
   document.getElementById('coords-hint').style.color = 'var(--green)';
   document.getElementById('stop-modal').classList.add('open');
   document.getElementById('saved-stops-panel').classList.remove('open');
-  // 反映停留時間顯示狀態
-  _applyModalStayToggle(!!stop._showStay, si === data.days[di].stops.length - 1);
   updateModalHint();
 }
 
@@ -3293,13 +3209,8 @@ function onStayChange() {
   const stayVal = parseInt(document.getElementById('edit-stay').value);
   if (isNaN(stayVal) || stayVal < 0) return;
   const arrivalMins = getArrivalMins();
-  if (arrivalMins !== null) {
-    document.getElementById('edit-depart').value = minutesToTime(arrivalMins + stayVal);
-  }
-  // 同步更新切換按鈕：停留為 0 時隱藏
-  const isLastStop = editTarget.si === data.days[editTarget.di].stops.length - 1;
-  const btn = document.getElementById('modal-stay-toggle');
-  if (btn) _applyModalStayToggle(btn.classList.contains('is-on'), isLastStop || stayVal === 0);
+  if (arrivalMins === null) return;
+  document.getElementById('edit-depart').value = minutesToTime(arrivalMins + stayVal);
   updateModalHint();
 }
 
@@ -3353,9 +3264,6 @@ function saveStop() {
     stop.depart = document.getElementById('edit-depart').value || stop.depart;
     stop._departUserSet = true; // 使用者明確設定，recalcTimes 不覆寫
     stop.stay = parseInt(document.getElementById('edit-stay').value) || 0;
-    // 儲存停留時間顯示開關狀態
-    const toggleBtn = document.getElementById('modal-stay-toggle');
-    stop._showStay = toggleBtn ? toggleBtn.classList.contains('is-on') : false;
   }
 
   // 解析手動座標
@@ -3624,43 +3532,6 @@ function deleteStop(di, si) {
   renderNavCard(di);
   syncMapIfActive(di);
   showToast('🗑 已刪除景點');
-}
-
-function toggleStayDisplay(di, si) {
-  const stop = data.days[di].stops[si];
-  stop._showStay = !stop._showStay;
-  autosave();
-  renderStops(di);
-  showToast(stop._showStay ? '⏱ 已顯示停留時間' : '⏱ 已隱藏停留時間');
-}
-
-// Modal 內停留時間顯示切換
-function _applyModalStayToggle(isOn, isLastStop) {
-  const btn = document.getElementById('modal-stay-toggle');
-  const label = document.getElementById('modal-stay-toggle-label');
-  const stayVal = parseInt(document.getElementById('edit-stay').value) || 0;
-  if (!btn) return;
-  // 最後一站或停留為 0，隱藏按鈕
-  if (isLastStop || stayVal === 0) {
-    btn.style.display = 'none';
-    return;
-  }
-  btn.style.display = '';
-  if (isOn) {
-    btn.classList.add('is-on');
-    label.textContent = '停留時間：顯示於行程 ✓';
-  } else {
-    btn.classList.remove('is-on');
-    label.textContent = '停留時間：不顯示於行程';
-  }
-}
-
-function toggleModalStayDisplay() {
-  const btn = document.getElementById('modal-stay-toggle');
-  if (!btn) return;
-  const nowOn = !btn.classList.contains('is-on');
-  const isLastStop = editTarget ? editTarget.si === data.days[editTarget.di].stops.length - 1 : true;
-  _applyModalStayToggle(nowOn, isLastStop);
 }
 
 function moveStop(di, si, dir) {
@@ -4362,10 +4233,6 @@ function exportHTML() {
         <input type="number" id="edit-stay" min="0" max="600" step="5" placeholder="分鐘" oninput="onStayChange()">
       </div>
     </div>
-    <button type="button" class="modal-stay-toggle" id="modal-stay-toggle" onclick="toggleModalStayDisplay()">
-      <span class="mst-dot"></span>
-      <span id="modal-stay-toggle-label">停留時間：不顯示於行程</span>
-    </button>
     <p id="modal-arrival-hint" style="font-size:0.74rem;color:var(--mid);margin-top:6px;min-height:1.2em"></p>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeModal()">取消</button>
@@ -5010,9 +4877,6 @@ document.addEventListener('keydown', function(e) {
 renderAll();
 // 初始進入行程頁為閱讀模式
 _applyItineraryMode();
-
-
-
 
 
 
