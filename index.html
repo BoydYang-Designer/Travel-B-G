@@ -1247,11 +1247,12 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 
 /* ── MAP STOP LIST (Inline Edit) ── */
 .map-stop-list {
-  background: white;
-  border-radius: 16px;
+  background: var(--white);
+  border-radius: 20px;
   padding: 16px;
-  box-shadow: 0 2px 12px rgba(26,107,138,0.08);
+  box-shadow: 0 4px 24px rgba(26,107,138,0.10);
   margin-bottom: 14px;
+  overflow: hidden;
 }
 .map-stop-list-header {
   display: flex;
@@ -1456,12 +1457,124 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 .map-geocode-badge.fail { background: var(--red-bg); color: var(--red); cursor: help; }
 .map-geocode-badge.manual { background: var(--green-bg); color: var(--green); }
 
+/* 座標操作按鈕 */
+.map-coords-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-size: 0.62rem;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 7px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  line-height: 1.5;
+}
+.map-coords-paste {
+  background: var(--light);
+  color: var(--ocean);
+  border-color: var(--sky);
+}
+.map-coords-paste:hover { background: var(--ocean); color: white; border-color: var(--ocean); }
+.map-coords-copy {
+  background: var(--green-bg);
+  color: var(--green);
+  border-color: var(--green);
+}
+.map-coords-copy:hover { background: var(--green); color: white; }
+.map-coords-clear {
+  background: var(--red-bg);
+  color: var(--red);
+  border-color: var(--red);
+  font-size: 0.7rem;
+  padding: 2px 6px;
+}
+.map-coords-clear:hover { background: var(--red); color: white; }
+
+/* ── 手機座標教學卡 ── */
+.map-coords-guide {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(26,107,138,0.07);
+  margin-bottom: 14px;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+}
+.map-coords-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ocean);
+  user-select: none;
+  transition: background 0.15s;
+}
+.map-coords-guide-header:hover { background: var(--light); }
+.map-coords-guide-arrow {
+  transition: transform 0.2s;
+  font-size: 0.75rem;
+  color: var(--sky);
+  flex-shrink: 0;
+}
+.map-coords-guide.open .map-coords-guide-arrow { transform: rotate(90deg); }
+.map-coords-guide-body {
+  display: none;
+  padding: 0 16px 14px;
+  border-top: 1px solid var(--border);
+}
+.map-coords-guide.open .map-coords-guide-body { display: block; }
+.map-coords-guide-steps {
+  margin: 12px 0 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.map-coords-guide-steps li {
+  font-size: 0.8rem;
+  color: var(--dark);
+  line-height: 1.5;
+}
+.map-coords-guide-steps code {
+  background: var(--light);
+  color: var(--ocean);
+  padding: 1px 5px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+}
+.map-coords-guide-tip {
+  font-size: 0.75rem;
+  color: var(--mid);
+  background: var(--amber-light-bg);
+  border: 1px solid #f0d890;
+  border-radius: 10px;
+  padding: 8px 12px;
+  line-height: 1.5;
+}
+
+/* map-stop-letter 可點擊（連結到 Google Maps） */
+a.map-stop-letter {
+  transition: background 0.18s, transform 0.15s, box-shadow 0.15s;
+}
+a.map-stop-letter:hover {
+  background: var(--sky);
+  transform: scale(1.18);
+  box-shadow: 0 2px 8px rgba(26,107,138,0.35);
+}
+
 /* 座標輸入列 */
 .map-coords-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   margin-top: 4px;
+  flex-wrap: wrap;
 }
 .map-inline-coords {
   flex: 1;
@@ -1481,36 +1594,6 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
 .map-inline-coords:focus { border-color: var(--green); background: white; border-style: solid; }
 
 /* ── MAP NAV BUTTON ── */
-.map-nav-bottom {
-  background: white;
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 2px 12px rgba(26,107,138,0.08);
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.map-nav-hero-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--ocean);
-  color: white;
-  text-decoration: none;
-  padding: 11px 16px;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  font-family: 'Noto Sans TC', sans-serif;
-  transition: background 0.2s, transform 0.15s;
-  letter-spacing: 0.03em;
-  min-width: 160px;
-  text-align: center;
-}
-.map-nav-hero-btn:hover { background: #155a76; transform: translateY(-1px); }
 
 /* ── TOAST ── */
 .toast {
@@ -2118,6 +2201,23 @@ body.map-preview-mode .map-sticky-top { padding-bottom: 12px; }
   <!-- 可滾動區塊：景點列表 + 導航按鈕 -->
   <div class="map-scroll-body">
     <div class="map-stop-list" id="map-stop-list"></div>
+    <!-- 手機取得座標教學 -->
+    <div class="map-coords-guide">
+      <div class="map-coords-guide-header" onclick="this.parentElement.classList.toggle('open')">
+        <span>📱 手機如何在 Google Maps 複製座標？</span>
+        <span class="map-coords-guide-arrow">▸</span>
+      </div>
+      <div class="map-coords-guide-body">
+        <ol class="map-coords-guide-steps">
+          <li>開啟 <strong>Google Maps</strong> App</li>
+          <li>搜尋景點名稱，點擊地圖上的正確位置</li>
+          <li>畫面下方出現景點資訊卡，<strong>長按</strong>卡片最頂端的座標數字</li>
+          <li>選擇「<strong>複製座標</strong>」</li>
+          <li>回到此頁，點景點旁的 <strong>貼上</strong> 按鈕即可</li>
+        </ol>
+        <div class="map-coords-guide-tip">💡 貼上後地圖球標會立即更新定位，不需另外儲存</div>
+      </div>
+    </div>
     <div id="map-nav-btn-wrap"></div>
   </div>
 </div>
@@ -2913,9 +3013,12 @@ function renderMapStopList() {
   const navEl  = document.getElementById('map-nav-btn-wrap');
 
   listEl.innerHTML = `
-    <div class="map-stop-list-header">
-      <span class="map-stop-list-title">📍 ${day.label} · ${day.theme}</span>
-      <button class="map-add-stop-btn" onclick="mapAddStop()">＋ 新增景點</button>
+    <div class="day-header" style="border-radius:16px 16px 0 0;margin:-16px -16px 12px -16px;">
+      <span class="day-badge">📍 ${day.label}</span>
+      <span class="day-theme-tag" style="cursor:default;">${day.theme}</span>
+      <div class="day-header-actions">
+        <button class="map-add-stop-btn" onclick="mapAddStop()" style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.4);color:white;border-radius:14px;font-size:0.72rem;padding:4px 10px;">＋ 新增景點</button>
+      </div>
     </div>
   `;
 
@@ -2949,21 +3052,28 @@ function renderMapStopList() {
     const row = document.createElement('div');
     row.className = 'map-stop-row';
     row.dataset.si = si;
+    const gmapsStopURL = stop.coords
+      ? `https://www.google.com/maps/search/?api=1&query=${stop.coords.lat},${stop.coords.lng}`
+      : `https://www.google.com/maps/search/${encodeURIComponent(_stopToPlace(stop.name))}`;
     row.innerHTML = `
-      <div class="map-stop-letter${geoStatus === 'fail' ? ' geocode-fail' : ''}" data-map-letter="${si}">${stopLetter(si)}</div>
+      <a class="map-stop-letter${geoStatus === 'fail' ? ' geocode-fail' : ''}" data-map-letter="${si}"
+        href="${gmapsStopURL}" target="_blank" title="在 Google Maps 查看「${escHtml(stop.name)}」"
+        style="text-decoration:none;cursor:pointer;">${stopLetter(si)}</a>
       <div class="map-stop-name-wrap">
         <input class="map-inline-name" value="${escHtml(stop.name)}" data-si="${si}" data-field="name"
           title="點擊編輯景點名稱"
           onblur="mapInlineSaveName(${si}, this.value)"
           onkeydown="if(event.key==='Enter'){this.blur();}">
-        ${stop.note ? stop.note.split('\n').map(n => n.trim()).filter(Boolean).map(n => `<div class="map-stop-note">${escHtml(n)}</div>`).join('') : ''}
         <div class="map-coords-row">
-          <input class="map-inline-coords"
+          <input class="map-inline-coords" id="coords-input-${si}"
             value="${stop.coords ? stop.coords.lat + ', ' + stop.coords.lng : ''}"
             placeholder="貼上座標，如：23.5712, 119.5634"
-            title="從 Google Maps 右鍵複製座標貼上"
+            title="從 Google Maps 長按景點 → 複製座標 → 貼上"
             onblur="mapInlineSaveCoords(${si}, this.value)"
             onkeydown="if(event.key==='Enter'){this.blur();}">
+          <button class="map-coords-btn map-coords-paste" onclick="mapCoordsAction('paste',${si})" title="貼上剪貼簿座標">貼上</button>
+          ${stop.coords ? `<button class="map-coords-btn map-coords-copy" onclick="mapCoordsAction('copy',${si})" title="複製此座標">複製</button>` : ''}
+          ${stop.coords ? `<button class="map-coords-btn map-coords-clear" onclick="mapCoordsAction('clear',${si})" title="清除座標">✕</button>` : ''}
           ${badgeHTML}
         </div>
       </div>
@@ -3011,12 +3121,25 @@ function renderMapStopList() {
     }
   });
 
-  // 導航按鈕
+  // 導航卡（與行程模式 renderNavCard 相同 UI）
+  const navURL = _buildNavURL(currentMapDay);
+  const cleanNameFn = name => name.replace(/[\u{1F300}-\u{1FFFF}\u2600-\u27BF\uFE00-\uFE0F\u{1F900}-\u{1F9FF}]/gu, '').trim();
+  const routeChips = stops.map((s, i) => {
+    const n = cleanNameFn(s.name);
+    const label = n.length > 8 ? n.slice(0, 8) + '…' : n;
+    return `<span class="nav-card-chip"><span class="nav-card-chip-num">${i + 1}</span>${label}</span>${i < stops.length - 1 ? '<span class="nav-card-arrow">›</span>' : ''}`;
+  }).join('');
+
   navEl.innerHTML = `
-    <div class="map-nav-bottom">
-      <a class="map-nav-hero-btn" href="${_buildNavURL(currentMapDay)}" target="_blank">
-        🗺 在 Google Maps 開啟導航 ↗
-      </a>
+    <div class="day-nav-card" style="border-radius:20px;margin-bottom:16px;">
+      <div class="nav-card-inner">
+        <div class="nav-card-route">${routeChips}</div>
+        <a class="nav-card-btn" href="${navURL}" target="_blank">
+          <span class="nav-card-btn-icon">🗺</span>
+          <span>開啟 Google Maps 導航</span>
+          <span class="nav-card-btn-arrow">↗</span>
+        </a>
+      </div>
     </div>
   `;
 }
@@ -3132,6 +3255,58 @@ function mapInlineSaveCoords(si, val) {
   renderMapStopList();
   refreshMapMarkers();
   showToast('📍 座標已設定，地圖已更新！');
+}
+
+async function mapCoordsAction(action, si) {
+  const di = currentMapDay;
+  const stop = data.days[di].stops[si];
+  const input = document.getElementById(`coords-input-${si}`);
+
+  if (action === 'paste') {
+    try {
+      let text = '';
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        text = await navigator.clipboard.readText();
+      } else {
+        // fallback: focus and let user paste manually
+        if (input) { input.focus(); input.select(); }
+        showToast('📋 請手動長按貼上（Ctrl+V）');
+        return;
+      }
+      text = text.trim();
+      // 嘗試解析剪貼簿中的座標（支援多種格式）
+      // Google Maps 複製格式: "23.5712, 119.5634" 或 "23.5712,119.5634"
+      const coordMatch = text.match(/(-?\d{1,3}\.\d+)\s*[,，]\s*(-?\d{1,3}\.\d+)/);
+      if (coordMatch) {
+        const coordStr = `${coordMatch[1]}, ${coordMatch[2]}`;
+        if (input) input.value = coordStr;
+        mapInlineSaveCoords(si, coordStr);
+      } else {
+        showToast('⚠️ 剪貼簿內容不像座標，請確認格式');
+      }
+    } catch(e) {
+      if (input) { input.focus(); input.select(); }
+      showToast('📋 請長按輸入框 → 選擇「貼上」');
+    }
+
+  } else if (action === 'copy') {
+    if (!stop.coords) { showToast('⚠️ 尚未設定座標'); return; }
+    const coordStr = `${stop.coords.lat}, ${stop.coords.lng}`;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(coordStr);
+      } else {
+        if (input) { input.select(); document.execCommand('copy'); }
+      }
+      showToast(`📋 已複製：${coordStr}`);
+    } catch(e) {
+      showToast('⚠️ 複製失敗，請手動選取');
+    }
+
+  } else if (action === 'clear') {
+    if (input) input.value = '';
+    mapInlineSaveCoords(si, '');
+  }
 }
 
 function mapMoveStop(si, dir) {
