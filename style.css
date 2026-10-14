@@ -1,0 +1,92 @@
+/* 美國商務出差行程｜樣式 —— 色彩、字級、各模式集中在這裡調整 */
+:root{
+  --bg:#e9edf1;      /* 頁面底色 */
+  --c:#ffffff;       /* 卡片 */
+  --t:#141b24;       /* 文字 */
+  --m:#546273;       /* 次要文字 */
+  --a:#0b4f7c;       /* 主色：深海藍 */
+  --a2:#e8f1f8;      /* 主色淡底 */
+  --l:#d5dde5;       /* 分隔線 */
+  --w:#8f3410;       /* 警示文字 */
+  --wb:#fff3ea;      /* 警示底 */
+  --fs:16px;         /* 基本字級 */
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--t);font:400 var(--fs)/1.75 "Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+
+/* 工具列 */
+.bar{position:sticky;top:0;z-index:9;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 14px;background:rgba(255,255,255,.96);border-bottom:1px solid var(--l);backdrop-filter:blur(6px)}
+.bar b{margin-right:auto;font-size:15px;letter-spacing:.04em}
+button,.btn{font:inherit;font-size:14px;line-height:1;min-height:34px;padding:0 12px;border:1px solid var(--l);background:var(--c);color:var(--t);border-radius:6px;cursor:pointer;display:inline-flex;align-items:center}
+button:hover,.btn:hover{border-color:var(--a)}
+button:focus-visible,.btn:focus-within,[contenteditable]:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+button.on{background:var(--a);border-color:var(--a);color:#fff}
+
+/* 版面 */
+main{max-width:840px;margin:20px auto 48px;padding:0 14px}
+.card{background:var(--c);border:1px solid var(--l);border-radius:8px;padding:20px 24px;margin-bottom:16px}
+h1{font-size:28px;line-height:1.35;font-weight:700;margin:0 0 6px;letter-spacing:.01em}
+h2{font-size:20px;line-height:1.4;font-weight:700;margin:0 0 12px;padding-bottom:10px;border-bottom:2px solid var(--a);color:var(--a)}
+.m{color:var(--m);font-size:14px;line-height:1.7}
+
+/* 航班與住宿資訊條 */
+.card .m:nth-of-type(1){background:var(--a2);color:var(--t);border-left:4px solid var(--a);padding:8px 12px;margin-bottom:10px;border-radius:0 6px 6px 0;font-size:15px}
+
+/* 時間軸 */
+.row{position:relative;display:grid;grid-template-columns:104px 1fr auto;gap:10px;padding:5px 0 5px 20px;margin-left:5px;border-left:2px solid #c3d1de}
+.row::before{content:"";position:absolute;left:-6px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--c);border:2px solid var(--a)}
+.t{color:var(--a);font-weight:700}
+.tip{margin-top:12px;padding:8px 12px;background:#f5f7f9;border-radius:6px;font-size:14px;color:var(--t)}
+
+/* 審查項目 */
+.iss{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;padding:10px 12px;margin:8px 0;background:var(--wb);border-radius:6px}
+.iss b{color:var(--w);font-size:13px;padding:0 8px;border:1px solid currentColor;border-radius:4px;white-space:nowrap}
+.iss div{color:var(--t);font-size:15px}
+
+/* 確認清單 */
+.ck{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--l)}
+.ck input{width:18px;height:18px;accent-color:var(--a);flex:none;align-self:center}
+.g{color:var(--a);font-size:13px;min-width:72px;font-weight:600}
+
+/* 編輯模式 */
+.ops{white-space:nowrap}
+.ops button{min-height:26px;padding:0 8px;margin-left:3px;font-size:12px}
+.x{display:none}.edit .x{display:inline-flex}
+.edit [contenteditable]{display:inline-block;min-width:1.5em;outline:1px dashed #7aa6c4;outline-offset:2px;border-radius:3px}
+
+/* 手機：窄螢幕自動套用，也可手動切換 */
+.mob{--fs:16px}
+.mob main{max-width:430px;margin-top:10px;padding:0 8px}
+.mob .card{padding:14px 14px}
+.mob h1{font-size:23px}.mob h2{font-size:18px}
+.mob .row{grid-template-columns:62px 1fr auto;gap:6px;padding-left:16px}
+.mob .iss{grid-template-columns:1fr auto}.mob .iss b{grid-column:1/-1;justify-self:start}
+@media(max-width:640px){
+  main{padding:0 8px;margin-top:10px}.card{padding:14px}
+  h1{font-size:23px}h2{font-size:18px}
+  .row{grid-template-columns:62px 1fr auto;gap:6px;padding-left:16px}
+  .iss{grid-template-columns:1fr auto}.iss b{grid-column:1/-1;justify-self:start}
+}
+
+/* A4 預覽（螢幕）與列印共用 */
+.a4{background:#c5ccd3;--fs:13px}
+.a4 main{width:210mm;max-width:none;min-height:297mm;margin:14px auto;padding:12mm;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.a4 .card,.card{--x:0}
+.a4 .card{border:0;border-radius:0;padding:8px 0;margin:0;break-inside:avoid}
+.a4 h1{font-size:21px}.a4 h2{font-size:15px;margin-bottom:6px;padding-bottom:4px}
+.a4 .m{font-size:12px}.a4 .iss div,.a4 .tip{font-size:12px}
+.a4 .row{grid-template-columns:24mm 1fr auto;padding-top:1px;padding-bottom:1px;line-height:1.55}
+.a4 .row::before{top:7px}
+@page{size:A4;margin:10mm}
+@media print{
+  .bar,.x{display:none!important}
+  body{background:#fff;font-size:10.5pt;line-height:1.55}
+  main{width:auto;max-width:none;margin:0;padding:0;box-shadow:none}
+  .card{border:0;border-radius:0;padding:8px 0;margin:0;break-inside:avoid}
+  h1{font-size:18pt}h2{font-size:12.5pt;margin-bottom:6px;padding-bottom:4px}
+  .m,.tip,.iss div{font-size:9.5pt}
+  .row{grid-template-columns:24mm 1fr;padding-top:1px;padding-bottom:1px}.row::before{top:7px}
+  .edit [contenteditable]{outline:none}
+  .iss,.tip,.card .m:nth-of-type(1){-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

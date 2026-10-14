@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>美國商務出差行程</title>
+<link rel="stylesheet" href="style.css"></head><body>
+<div class="bar"><b>✈ 出差行程</b>
+<button data-m="" class="on">電腦閱讀</button><button data-m="mob">手機閱讀</button><button data-m="a4">A4 預覽</button>
+<button id="ed">編輯模式</button><button id="pr">列印 A4</button><button id="ex">匯出 JSON</button>
+<label class="btn">匯入 JSON<input id="im" type="file" accept=".json" hidden></label><button id="rs">還原預設</button></div>
+<main id="app"></main>
+<script type="application/json" id="d">
+{"title":"美國商務出差｜6 天行程（修訂版）","subtitle":"2026/11/01（日）– 11/06（五）｜台北 → 洛杉磯 → 亞特蘭大 → 洛杉磯 → 台北｜所有時間為當地時間；11/01 美國夏令結束，LAX 與台灣差 16 小時，ATL 差 13 小時",
+"issues":[
+{"lv":"高","x":"時差與會議：11/03 的 09:00–17:00（EST）相當台灣 22:00–06:00，14:00–16:00 正是身體最低潮。關鍵提案與決策排上午，下午處理細節與待辦；11/02 白天多曬自然光。"},
+{"lv":"高","x":"ATL 飯店尚未確定（需 11/02、11/03 兩晚）。請選會議地點（Concourse Pkwy／Peachtree Dunwoody 一帶）附近，通勤與 11/04 去機場時間都取決於此。"},
+{"lv":"高","x":"11/02 落地到入住只留 60 分鐘過緊：16:24 抵達、17:00–18:30 為尖峰，ATL 機場到北區可能 60–90 分鐘。已改為預留 90 分鐘，晚餐移到 19:00。"},
+{"lv":"中","x":"11/04 去 ATL 機場原抓 30 分鐘過於樂觀，已改 08:45 出發、預留 75 分鐘，不要壓縮。"},
+{"lv":"中","x":"「凱悅住宿 17h50m」其實是落地到隔天起飛的間隔，飯店實際停留約 13 小時、可睡約 8 小時，已更正。"},
+{"lv":"中","x":"11/04 LAX 候機 8h37m：長榮櫃檯約 18:30 才開，之前要帶著行李等。達美（SkyTeam）與長榮（Star Alliance）通常不能行李直掛，需重新托運；備案見 11/04 提示。"},
+{"lv":"中","x":"樣品：Graco 會議攜帶的樣品，入境美國與返台都可能要申報，請先確認文件與規定。"},
+{"lv":"低","x":"11/06 05:40 抵達後缺少返家交通安排，已補上（例：機場捷運→高鐵桃園站→嘉義）。"}],
+"days":[
+{"date":"11/01（日）","title":"台北 → 洛杉磯","flight":"BR12 19:40 TPE → 15:20 LAX（同日，飛行 11h40m）","hotel":"Hyatt Regency LAX・6225 W Century Blvd, Los Angeles, CA 90045","items":[
+{"t":"16:45","e":"抵達桃園機場，長榮報到、托運"},{"t":"17:15","e":"安檢出境，晚餐或候機"},{"t":"18:45","e":"前往登機門"},{"t":"19:40","e":"BR12 起飛"},
+{"t":"15:20","e":"抵達 LAX（當地 PST）"},{"t":"15:20–16:40","e":"入境審查、領行李、海關"},{"t":"16:40","e":"與何董會合，搭飯店接駁車"},{"t":"17:10","e":"Hyatt 辦理入住"},{"t":"18:30","e":"飯店晚餐（清淡）"},{"t":"19:30","e":"確認 DL327 報到、行李與隔日接駁時間，設鬧鐘"},{"t":"21:00","e":"就寢（可睡約 8 小時）"}],
+"tip":"不排市區觀光；撐到 21:00 並利用自然光調時差。"},
+{"date":"11/02（一）","title":"洛杉磯 → 亞特蘭大","flight":"DL327 09:10 LAX → 16:24 ATL（飛行 4h14m）","hotel":"ATL 飯店（待確認，建議靠近會議地點）","items":[
+{"t":"05:40","e":"起床、盥洗"},{"t":"06:00","e":"Hyatt 早餐（未開則改外帶）"},{"t":"06:30","e":"退房，搭飯店接駁車"},{"t":"06:50","e":"抵達 LAX Delta 航廈"},{"t":"07:10","e":"報到、托運（行李最晚起飛前 45 分）"},{"t":"07:45","e":"TSA 安檢"},{"t":"08:30","e":"登機門候機"},{"t":"09:10","e":"DL327 起飛"},
+{"t":"16:24","e":"抵達 ATL，領行李"},{"t":"17:15–19:00","e":"前往飯店、入住（尖峰預留 90 分鐘）"},{"t":"19:00","e":"晚餐"},{"t":"20:00","e":"檢查 Graco 簡報、樣品、隔日交通"},{"t":"21:00","e":"就寢"}],
+"tip":"今晚可能因時差睡不著，事先備好助眠方式；11/01 晚上先確認 Hyatt 早餐與接駁時間。"},
+{"date":"11/03（二）","title":"Graco 商務會議","flight":"無航班","hotel":"ATL 飯店","items":[
+{"t":"06:30","e":"起床"},{"t":"07:00","e":"早餐"},{"t":"07:45","e":"檢查簡報、樣品與資料"},{"t":"08:00","e":"前往會議地點（依實際距離調整）"},{"t":"08:45","e":"報到、寒暄"},{"t":"09:00","e":"商務會議、產品開發方向交流"},{"t":"10:30","e":"設計概念與技術討論"},{"t":"12:00","e":"午餐"},{"t":"13:00","e":"產品提案、設計細節"},{"t":"15:00","e":"後續開發方向與待辦"},{"t":"16:30","e":"總結、確認下一步"},{"t":"17:00","e":"返回飯店"},{"t":"18:30","e":"晚餐"},{"t":"19:30","e":"整理會議紀錄、備份資料"},{"t":"20:30","e":"打包、確認 DL895"},{"t":"21:30","e":"休息"}],
+"tip":"會議時間為暫估（09:00–17:00），地址與入口須向窗口確認；可詢問是否參觀設計中心。"},
+{"date":"11/04（三）","title":"亞特蘭大 → 洛杉磯 → 台北","flight":"DL895 12:40 ATL → 14:23 LAX（4h43m）；BR15 23:00 LAX → TPE","hotel":"無（夜間班機）","items":[
+{"t":"07:00","e":"起床"},{"t":"07:30","e":"早餐"},{"t":"08:15","e":"退房"},{"t":"08:45","e":"前往 ATL 機場（預留 75 分鐘）"},{"t":"10:00","e":"抵達機場，Delta 報到、托運"},{"t":"10:45","e":"TSA 安檢"},{"t":"11:30","e":"登機門候機"},{"t":"12:40","e":"DL895 起飛"},
+{"t":"14:23","e":"抵達 LAX"},{"t":"14:23–15:30","e":"下機、領行李（需重新托運）"},{"t":"15:30","e":"移動到 Tom Bradley 國際航廈（TBIT）"},{"t":"16:00","e":"休息、整理資料"},{"t":"17:30","e":"晚餐"},{"t":"18:30","e":"BR15 櫃檯開放，報到、托運"},{"t":"19:30","e":"TSA 安檢"},{"t":"20:30","e":"免稅店、候機"},{"t":"22:00","e":"前往登機門"},{"t":"23:00","e":"BR15 起飛"}],
+"tip":"備案：不想拖行李，先電洽 Hyatt 能否寄放，搭接駁去休息，18:00 前回 TBIT。BR15 櫃檯開放與關閉時間請出發前再核對長榮公告。DL895 若延誤，8h37m 也是緩衝。"},
+{"date":"11/05（四）","title":"越洋飛行","flight":"BR15（飛行 14h40m，跨越國際換日線）","hotel":"機上","items":[
+{"t":"前段","e":"用餐、休息"},{"t":"後段","e":"依台灣時間睡眠"},{"t":"抵達前","e":"早餐、備妥入境資料"}],
+"tip":"上機後就把手錶調成台灣時間。"},
+{"date":"11/06（五）","title":"抵達台灣","flight":"BR15 05:40 抵達 TPE","hotel":"返家","items":[
+{"t":"05:40","e":"下機、入境審查"},{"t":"06:30","e":"領行李、海關（樣品如需申報）"},{"t":"07:15","e":"早餐、安排返家（機場捷運→高鐵桃園站→嘉義）"},{"t":"08:00","e":"返家休息"}],
+"tip":"當天避免高專注工作與長途自行開車。"}],
+"checklist":[
+{"g":"11/01 前","x":"確認 ESTA 核准與護照效期","done":false},{"g":"11/01 前","x":"與何董確認 LAX 會合位置與聯絡方式","done":false},{"g":"11/01 前","x":"向 Hyatt 確認 11/02 清晨接駁車時間","done":false},{"g":"11/01 前","x":"確認 Delta 行李額度與線上 Check-in","done":false},{"g":"11/01 前","x":"確認樣品的入境與返台申報文件","done":false},
+{"g":"11/02 前","x":"訂妥 ATL 飯店（11/02、11/03 兩晚）","done":false},{"g":"11/02 前","x":"確認 Graco 會議地址與開始時間","done":false},{"g":"11/02 前","x":"規劃 ATL 機場到飯店的交通","done":false},
+{"g":"11/04 前","x":"確認 Delta 與長榮是否分開開票、行李是否重新托運","done":false},{"g":"11/04 前","x":"確認 BR15 班機狀態與 LAX 櫃檯開放時間","done":false}]}
+</script>
+<script>
+const K='trip-itin-v1',$=id=>document.getElementById(id),DEF=JSON.parse($('d').textContent);
+let D,mode='',ed=false;
+const E=s=>String(s??'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const F=(p,v,t='span')=>`<${t} data-p="${p}"${ed?' contenteditable':''}>${E(v)}</${t}>`;
+const G=p=>p?p.split('.').reduce((o,k)=>o[k],D):D;
+const X=(a,i)=>`<span class="ops x"><button data-ins="${a}" data-i="${i}" title="在下方插入一列">＋</button><button data-mv="${a}" data-i="${i}" data-d="-1" title="上移">↑</button><button data-mv="${a}" data-i="${i}" data-d="1" title="下移">↓</button><button data-del="${a}" data-i="${i}" title="刪除">✕</button></span>`,A=a=>`<button class="x" data-add="${a}">＋新增</button>`;
+const TPL={issues:{lv:'中',x:'新項目'},items:{t:'00:00',e:'新行程'},checklist:{g:'',x:'新項目',done:false},days:{date:'日期',title:'標題',flight:'',hotel:'',tip:'',items:[]}};
+const save=()=>{try{localStorage[K]=JSON.stringify(D)}catch{}};
+const M=()=>document.body.className=mode+(ed?' edit':'');
+function R(){const d=D,L=(a,f)=>d[a].map(f).join('');
+$('app').innerHTML=`<div class="card">${F('title',d.title,'h1')}<div class="m">${F('subtitle',d.subtitle)}</div></div>
+<div class="card"><h2>行程審查</h2>${L('issues',(x,i)=>`<div class="iss"><b>${F(`issues.${i}.lv`,x.lv)}</b><div>${F(`issues.${i}.x`,x.x)}</div>${X('issues',i)}</div>`)}${A('issues')}</div>
+${L('days',(y,i)=>{const p=`days.${i}.`;return `<div class="card"><h2>${F(p+'date',y.date)}｜${F(p+'title',y.title)}</h2><div class="m">航班：${F(p+'flight',y.flight)}<br>住宿：${F(p+'hotel',y.hotel)}</div>${y.items.map((r,j)=>`<div class="row"><span class="t">${F(`${p}items.${j}.t`,r.t)}</span><span>${F(`${p}items.${j}.e`,r.e)}</span>${X(p+'items',j)}</div>`).join('')}${A(p+'items')}<div class="m tip">提示：${F(p+'tip',y.tip)}</div></div>`})}
+<div class="card"><h2>出發前確認清單</h2>${L('checklist',(c,i)=>`<div class="ck"><input type="checkbox" data-ck="${i}"${c.done?' checked':''}><span class="g">${F(`checklist.${i}.g`,c.g)}</span>${F(`checklist.${i}.x`,c.x)}${X('checklist',i)}</div>`)}${A('checklist')}</div>
+${ed?'<div class="card"><button class="x" data-add="days">＋新增一天</button></div>':''}`}
+$('app').oninput=e=>{const p=e.target.dataset.p;if(p){const a=p.split('.'),k=a.pop();G(a.join('.'))[k]=e.target.innerText.trim();save()}};
+$('app').onclick=e=>{const t=e.target,s=t.dataset;
+if(s.add){G(s.add).push(structuredClone(TPL[s.add.split('.').pop()]));save();R()}
+else if(s.ins){G(s.ins).splice(+s.i+1,0,structuredClone(TPL[s.ins.split('.').pop()]));save();R()}
+else if(s.mv){const a=G(s.mv),i=+s.i,j=i+ +s.d;if(j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];save();R()}}
+else if(s.del){G(s.del).splice(+s.i,1);save();R()}
+else if(s.ck!=null){D.checklist[s.ck].done=t.checked;save()}};
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x==b));M()});
+$('ed').onclick=e=>{ed=!ed;e.target.classList.toggle('on',ed);M();R()};
+$('pr').onclick=()=>print();
+$('ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));a.download='itinerary.json';a.click()};
+$('im').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>{try{D=JSON.parse(t);save();R()}catch{alert('JSON 格式錯誤，未匯入')}})};
+$('rs').onclick=()=>{if(confirm('還原為內建預設內容？目前的修改會被覆蓋。')){localStorage.removeItem(K);D=structuredClone(DEF);R();fetch('itinerary.json').then(r=>r.json()).then(j=>{D=j;R()}).catch(()=>{})}};
+let s=null;try{s=JSON.parse(localStorage[K])}catch{}
+D=s||structuredClone(DEF);R();
+if(!s)fetch('itinerary.json').then(r=>r.json()).then(j=>{D=j;R()}).catch(()=>{});
+</script></body></html>
