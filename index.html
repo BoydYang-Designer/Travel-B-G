@@ -55,15 +55,18 @@ const X=(a,i)=>`<span class="ops x"><button data-ins="${a}" data-i="${i}" title=
 const TPL={issues:{lv:'中',x:'新項目'},items:{t:'00:00',e:'新行程'},checklist:{g:'',x:'新項目',done:false},days:{date:'日期',title:'標題',flight:'',hotel:'',tip:'',items:[]}};
 const save=()=>{try{localStorage[K]=JSON.stringify(D)}catch{}};
 const M=()=>document.body.className=mode+(ed?' edit':'');
+const dO={},T0=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
+const dt=y=>{const m=y.date.match(/(\d+)\/(\d+)/);return m?new Date((D.subtitle.match(/(\d{4})\//)||[])[1]||T0().getFullYear(),m[1]-1,m[2]):null};
+const isO=i=>{if(ed)return true;if(i in dO)return dO[i];const z=dt(D.days[i]);return !(z&&z<T0())};
 function R(){const d=D,L=(a,f)=>d[a].map(f).join('');
 $('app').innerHTML=`<div class="card">${F('title',d.title,'h1')}<div class="m">${F('subtitle',d.subtitle)}</div></div>
 <div class="card"><details${iO||ed?' open':''}><summary>行程審查（${d.issues.length} 項）</summary>${L('issues',(x,i)=>`<div class="iss"><b>${F(`issues.${i}.lv`,x.lv)}</b><div>${F(`issues.${i}.x`,x.x)}</div>${X('issues',i)}</div>`)}${A('issues')}</details></div>
-${L('days',(y,i)=>{const p=`days.${i}.`;return `<div class="card"><h2>${F(p+'date',y.date)}｜${F(p+'title',y.title)}</h2><div class="m">航班：${F(p+'flight',y.flight)}<br>住宿：${F(p+'hotel',y.hotel)}</div>${y.items.map((r,j)=>`<div class="row"><span class="t">${F(`${p}items.${j}.t`,r.t)}</span><span>${F(`${p}items.${j}.e`,r.e)}</span>${X(p+'items',j)}</div>`).join('')}${A(p+'items')}<div class="m tip">提示：${F(p+'tip',y.tip)}</div></div>`})}
+${L('days',(y,i)=>{const p=`days.${i}.`,z=dt(y),td=z&&+z==+T0();return `<div class="card${isO(i)?'':' closed'}${z&&z<T0()?' past':''}${td?' today':''}"><h2 data-d="${i}">${F(p+'date',y.date)}｜${F(p+'title',y.title)}${td?'<span class="tg">今天</span>':''}</h2><div class="body"><div class="m">航班：${F(p+'flight',y.flight)}<br>住宿：${F(p+'hotel',y.hotel)}</div>${y.items.map((r,j)=>`<div class="row"><span class="t">${F(`${p}items.${j}.t`,r.t)}</span><span>${F(`${p}items.${j}.e`,r.e)}</span>${X(p+'items',j)}</div>`).join('')}${A(p+'items')}<div class="m tip">提示：${F(p+'tip',y.tip)}</div></div></div>`})}
 <div class="card"><h2>出發前確認清單</h2>${L('checklist',(c,i)=>`<div class="ck"><input type="checkbox" data-ck="${i}"${c.done?' checked':''}><span class="g">${F(`checklist.${i}.g`,c.g)}</span>${F(`checklist.${i}.x`,c.x)}${X('checklist',i)}</div>`)}${A('checklist')}</div>
 ${ed?'<div class="card"><button class="x" data-add="days">＋新增一天</button></div>':''}`}
 $('app').addEventListener('toggle',e=>{if(!ed)iO=e.target.open},true);
 $('app').oninput=e=>{const p=e.target.dataset.p;if(p){const a=p.split('.'),k=a.pop();G(a.join('.'))[k]=e.target.innerText.trim();save()}};
-$('app').onclick=e=>{const t=e.target,s=t.dataset;
+$('app').onclick=e=>{const t=e.target,s=t.dataset,h=t.closest('h2[data-d]');if(h&&!ed){const c=h.parentElement;c.classList.toggle('closed');dO[h.dataset.d]=!c.classList.contains('closed');return}
 if(s.add){G(s.add).push(structuredClone(TPL[s.add.split('.').pop()]));save();R()}
 else if(s.ins){G(s.ins).splice(+s.i+1,0,structuredClone(TPL[s.ins.split('.').pop()]));save();R()}
 else if(s.mv){const a=G(s.mv),i=+s.i,j=i+ +s.d;if(j>=0&&j<a.length){[a[i],a[j]]=[a[j],a[i]];save();R()}}
@@ -76,6 +79,7 @@ $('ex').onclick=()=>{const a=document.createElement('a');a.href=URL.createObject
 $('im').onchange=e=>{const f=e.target.files[0];if(f)f.text().then(t=>{try{D=JSON.parse(t);save();R()}catch{alert('JSON 格式錯誤，未匯入')}})};
 $('rs').onclick=()=>{if(confirm('還原為內建預設內容？目前的修改會被覆蓋。')){localStorage.removeItem(K);D=structuredClone(DEF);R();fetch('itinerary.json').then(r=>r.json()).then(j=>{D=j;R()}).catch(()=>{})}};
 let s=null;try{s=JSON.parse(localStorage[K])}catch{}
-D=s||structuredClone(DEF);R();
+D=s||structuredClone(DEF);R();document.querySelector('.today')?.scrollIntoView();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!ed)R()});
 if(!s)fetch('itinerary.json').then(r=>r.json()).then(j=>{D=j;R()}).catch(()=>{});
 </script></body></html>
