@@ -58,12 +58,12 @@ const M=()=>document.body.className=mode+(ed?' edit':'');
 const dO={},T0=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate())};
 const dt=y=>{const m=y.date.match(/(\d+)\/(\d+)/);return m?new Date((D.subtitle.match(/(\d{4})\//)||[])[1]||T0().getFullYear(),m[1]-1,m[2]):null};
 const isO=i=>{if(ed)return true;if(i in dO)return dO[i];const z=dt(D.days[i]);return !(z&&z<T0())};
-function R(){const d=D,L=(a,f)=>d[a].map(f).join('');
+function R(){const y=scrollY,d=D,L=(a,f)=>d[a].map(f).join('');
 $('app').innerHTML=`<div class="card">${F('title',d.title,'h1')}<div class="m">${F('subtitle',d.subtitle)}</div></div>
 <div class="card"><details${iO||ed?' open':''}><summary>行程審查（${d.issues.length} 項）</summary>${L('issues',(x,i)=>`<div class="iss"><b>${F(`issues.${i}.lv`,x.lv)}</b><div>${F(`issues.${i}.x`,x.x)}</div>${X('issues',i)}</div>`)}${A('issues')}</details></div>
 ${L('days',(y,i)=>{const p=`days.${i}.`,z=dt(y),td=z&&+z==+T0();return `<div class="card${isO(i)?'':' closed'}${z&&z<T0()?' past':''}${td?' today':''}"><h2 data-d="${i}">${F(p+'date',y.date)}｜${F(p+'title',y.title)}${td?'<span class="tg">今天</span>':''}</h2><div class="body"><div class="m">航班：${F(p+'flight',y.flight)}<br>住宿：${F(p+'hotel',y.hotel)}</div>${y.items.map((r,j)=>`<div class="row"><span class="t">${F(`${p}items.${j}.t`,r.t)}</span><span>${F(`${p}items.${j}.e`,r.e)}</span>${X(p+'items',j)}</div>`).join('')}${A(p+'items')}<div class="m tip">提示：${F(p+'tip',y.tip)}</div></div></div>`})}
 <div class="card"><h2>出發前確認清單</h2>${L('checklist',(c,i)=>`<div class="ck"><input type="checkbox" data-ck="${i}"${c.done?' checked':''}><span class="g">${F(`checklist.${i}.g`,c.g)}</span>${F(`checklist.${i}.x`,c.x)}${X('checklist',i)}</div>`)}${A('checklist')}</div>
-${ed?'<div class="card"><button class="x" data-add="days">＋新增一天</button></div>':''}`}
+${ed?'<div class="card"><button class="x" data-add="days">＋新增一天</button></div>':''}`;scrollTo(0,y)}
 $('app').addEventListener('toggle',e=>{if(!ed)iO=e.target.open},true);
 $('app').oninput=e=>{const p=e.target.dataset.p;if(p){const a=p.split('.'),k=a.pop();G(a.join('.'))[k]=e.target.innerText.trim();save()}};
 $('app').onclick=e=>{const t=e.target,s=t.dataset,h=t.closest('h2[data-d]');if(h&&!ed){const c=h.parentElement;c.classList.toggle('closed');dO[h.dataset.d]=!c.classList.contains('closed');return}
